@@ -1,15 +1,19 @@
 package com.example.movement_visualisation.controllers;
 
 import com.example.movement_visualisation.Object;
+import com.example.movement_visualisation.Cell;
 import com.example.movement_visualisation.enums.WarningCodes;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -36,6 +40,8 @@ public class VisualizationController {
     private Object[] objects;
 
     private Object selectedObject;
+    private Cell goalCell;
+    private Cell startCell;
 
     private final int[] WIDTH_INTERVAL = {10,30};
     private final int[] HEIGHT_INTERVAL = {10,16};
@@ -70,13 +76,13 @@ public class VisualizationController {
         // ========================
         // ДЛЯ ДЕБАГА
         // ========================
-        Timeline timeline = new Timeline(
+/*        Timeline timeline = new Timeline(
                 new KeyFrame(Duration.seconds(0.001), event -> {
                     updateMapGraphics();
                 })
         );
         timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
+        timeline.play();*/
     }
 
     /*===================================================
@@ -185,12 +191,53 @@ public class VisualizationController {
     void setCells() {
         for (int i = 0; i < this.fieldHeight; i++) {
             for (int j = 0; j < this.fieldWidth; j++) {
-                Rectangle cell = new Rectangle(50, 50);
+                Cell cell = new Cell(50, 50);
 
-                if (bitMap[i][j] == 0)
+                if (bitMap[i][j] == 0) {
                     cell.setFill(Color.valueOf("#EEEEEE"));
-                if (bitMap[i][j] == 1)
+                }
+                if (bitMap[i][j] == 1) {
+                    cell.setAsObstacle(true);
                     cell.setFill(Color.valueOf("#31363F"));
+                }
+
+                cell.setOnMouseEntered(event -> {
+                    if (!cell.isObstacle() || cell.isGoal())
+                        cell.setFill(Color.valueOf("#bdbdbd"));
+                });
+
+                cell.setOnMouseExited(event -> {
+                    if (!cell.isObstacle() && !cell.isGoal())
+                        cell.setFill(Color.valueOf("#EEEEEE"));
+                });
+
+                cell.setOnMouseClicked(event -> {
+                    if (!cell.isObstacle() && !cell.isGoal()) {
+                        boolean isObjectCell = false;
+                        for (Object object : objects) {
+                            if (object.getX() == GridPane.getColumnIndex((Node) event.getSource())
+                                    && object.getY() == GridPane.getRowIndex((Node) event.getSource())) {
+                                isObjectCell = true;
+                                break;
+                            }
+                        }
+
+                        startCell = getCurrentObjectCell();
+
+                        if (!isObjectCell) {
+                            cell.setFill(Color.valueOf("#76ABAE"));
+                            cell.setAsGoal(true);
+
+                            if (goalCell != null) {
+                                goalCell.setFill(Color.valueOf("#EEEEEE"));
+                                goalCell.setAsGoal(false);
+                            }
+                            goalCell = cell;
+                        }
+                    }
+
+                    startCell.setFill(Color.GREEN);
+                });
 
                 cell.setStroke(Color.valueOf("#222831"));
                 map.add(cell, j, i);
@@ -215,7 +262,6 @@ public class VisualizationController {
                 cords[1] = random.nextInt(this.fieldHeight);
             } while (bitMap[cords[1]][cords[0]] == 1);
 
-
             objects[i] = new Object(cords[0], cords[1]);
 
             map.add(objects[i].getIcon(), cords[0], cords[1]);
@@ -224,13 +270,14 @@ public class VisualizationController {
 
             bitMap[objects[i].getY()][objects[i].getX()] = 1;
         }
+
+        selectedObject = objects[0];
     }
 
     private void setupObjectClickHandlers() {
         for (Object object : objects) {
             object.getIcon().setOnMouseClicked(event -> {
                 selectedObject = object;
-
                 selectedObject.Move(scene, map, bitMap);
             });
         }
@@ -241,6 +288,18 @@ public class VisualizationController {
     // ТЕСТИ
     //
     //==========================================
+
+    public Cell getCurrentObjectCell() {
+        for (Node node : map.getChildren()) {
+            if (GridPane.getColumnIndex(node) != null && GridPane.getRowIndex(node) != null) {
+                if (GridPane.getColumnIndex(node) == selectedObject.getX() && GridPane.getRowIndex(node) == selectedObject.getY()) {
+                    return (Cell) node;
+                }
+            }
+        }
+        return null;
+    }
+
 
     //==========================================
     //
@@ -260,5 +319,7 @@ public class VisualizationController {
             }
         }
     }
+
+
 
 }

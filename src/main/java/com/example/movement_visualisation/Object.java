@@ -5,6 +5,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Object {
     private int x;
     private int y;
@@ -79,4 +82,12 @@ public class Object {
     public void setX(int x){ this.x = x; }
 
     public void setY(int y){ this.y = y; }
+
+
+    //==========================================
+    //
+    // ТЕСТИ
+    //
+    //==========================================
+
 }
