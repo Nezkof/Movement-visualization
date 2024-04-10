@@ -1,5 +1,6 @@
 package com.example.movement_visualisation.controllers;
 
+import com.example.movement_visualisation.AStarAlgorithm;
 import com.example.movement_visualisation.Object;
 import com.example.movement_visualisation.Cell;
 import com.example.movement_visualisation.enums.WarningCodes;
@@ -60,7 +61,7 @@ public class VisualizationController {
 
         validateData();
 
-        this.objects = new Object[objectsNumber];
+        this.objects = new Object[this.objectsNumber];
         this.bitMap = new int[this.fieldHeight][this.fieldWidth];
         this.scene = scene;
 
@@ -134,7 +135,7 @@ public class VisualizationController {
                 break;
             case OBJECTS_NUMBER_TOO_HIGH:
             case OBJECTS_NUMBER_TOO_LOW:
-                this.objectsNumber = getOptimalValueForCode(code);
+                objectsNumber = getOptimalValueForCode(code);
                 break;
         }
     }
@@ -229,6 +230,7 @@ public class VisualizationController {
                             cell.setAsGoal(true);
 
                             if (goalCell != null) {
+
                                 goalCell.setFill(Color.valueOf("#EEEEEE"));
                                 goalCell.setAsGoal(false);
                             }
@@ -237,6 +239,7 @@ public class VisualizationController {
                     }
 
                     startCell.setFill(Color.GREEN);
+                    startSearching();
                 });
 
                 cell.setStroke(Color.valueOf("#222831"));
@@ -298,6 +301,27 @@ public class VisualizationController {
             }
         }
         return null;
+    }
+
+    public void startSearching(){
+        int col = 0;
+        int row = 0;
+
+        while (col < map.getColumnCount() && row < map.getRowCount()){
+            Cell cell = (Cell) map.getChildren().get(row * map.getRowCount() + col);
+            cell.getCost(startCell, goalCell);
+            col++;
+            if (col == map.getColumnCount()){
+                col = 0;
+                row++;
+            }
+        }
+
+        AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
+
+        scene.setOnMouseClicked(event -> {
+            algorithm.findPath();
+        });
     }
 
 
