@@ -28,17 +28,14 @@ public class VisualizationController {
     @FXML private VBox VBox;
 
     Scene scene;
-    private int fieldHeight;
-    private int fieldWidth;
+    private int fieldHeight, fieldWidth;
     private int objectsNumber;
     private boolean isObstacles;
     private GridPane map;
     private boolean[][] bitMap;
     private Object[] objects;
-
     private Object selectedObject;
-    private Cell goalCell;
-    private Cell startCell;
+    private Cell goalCell, startCell;
 
     private final int[] WIDTH_INTERVAL = {10,30};
     private final int[] HEIGHT_INTERVAL = {10,16};
@@ -219,7 +216,6 @@ public class VisualizationController {
                         }
 
                         startCell = getCurrentObjectCell();
-                        startCell.setAsStart(true);
 
                         if (!isObjectCell) {
                             cell.setFill(Color.valueOf("#76ABAE"));
@@ -251,8 +247,8 @@ public class VisualizationController {
     }
 
     void setObjects() {
+        Random random = new Random();
         for (int i = 0; i < objects.length; ++i){
-            Random random = new Random();
             int[] cords = new int[2];
 
             do {
@@ -266,12 +262,16 @@ public class VisualizationController {
             GridPane.setHalignment(objects[i].getIcon(), HPos.CENTER);
             GridPane.setValignment(objects[i].getIcon(), VPos.CENTER);
 
-            Cell cell = (Cell) map.getChildren().get(objects[i].getY()*map.getColumnCount() + objects[i].getX());
-            cell.setAsObstacle(true);
-            bitMap[objects[i].getY()][objects[i].getX()] = true;
+            placeObjectObstacles(objects[i]);
         }
 
         selectedObject = objects[0];
+    }
+
+    private void placeObjectObstacles(Object object) {
+        Cell cell = (Cell) map.getChildren().get(object.getY() * map.getColumnCount() + object.getX());
+        cell.setAsObstacle(true);
+        bitMap[object.getY()][object.getX()] = true;
     }
 
     private void setupObjectClickHandlers() {
@@ -282,12 +282,6 @@ public class VisualizationController {
             });
         }
     }
-
-    //==========================================
-    //
-    // ТЕСТИ
-    //
-    //==========================================
 
     public Cell getCurrentObjectCell() {
         for (Node node : map.getChildren()) {
@@ -300,13 +294,18 @@ public class VisualizationController {
         return null;
     }
 
+    //==========================================
+    //
+    // ТЕСТИ
+    //
+    //==========================================
+
     public void startSearching(){
         AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
 
         scene.setOnMouseClicked(mouseEvent ->  algorithm.findPath());
 
     }
-
 
     //==========================================
     //

@@ -33,9 +33,6 @@ public class Cell extends Rectangle {
     public void setAsObstacle(boolean value) {
         this.isObstacle = value;
     }
-    public void setAsStart(boolean value) {
-        this.isStart = true;
-    }
     public void setAsGoal(boolean value){
         this.isGoal = value;
     }
@@ -90,7 +87,6 @@ public class Cell extends Rectangle {
     public Cell getParentCell(){
         return this.parentCell;
     }
-
     public void getCost(Cell startCell, Cell goalCell) {
         int xDist = Math.abs(GridPane.getColumnIndex(this) - GridPane.getColumnIndex(startCell));
         int yDist = Math.abs(GridPane.getRowIndex(this) - GridPane.getRowIndex(startCell));
