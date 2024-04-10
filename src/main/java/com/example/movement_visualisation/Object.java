@@ -12,6 +12,7 @@ public class Object {
     private int x;
     private int y;
     private final Circle icon;
+    private boolean isSelected;
 
     Object() {
         this.x = 0;
@@ -74,7 +75,9 @@ public class Object {
     }
 
 
-
+    public boolean isSelected() {
+        return this.isSelected;
+    }
     public int getX(){ return this.x; }
 
     public int getY(){ return this.y; }
@@ -84,6 +87,9 @@ public class Object {
     public void setX(int x){ this.x = x; }
 
     public void setY(int y){ this.y = y; }
+    public void setSelected(boolean value) {
+        this.isSelected = value;
+    }
 
 
     //==========================================

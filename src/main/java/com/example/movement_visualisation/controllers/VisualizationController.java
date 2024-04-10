@@ -5,11 +5,8 @@ import com.example.movement_visualisation.Object;
 import com.example.movement_visualisation.Cell;
 import com.example.movement_visualisation.enums.WarningCodes;
 
-import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.collections.ObservableList;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
@@ -20,7 +17,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import javafx.scene.shape.Rectangle;
 
 import java.util.*;
 
@@ -78,13 +74,11 @@ public class VisualizationController {
         // ДЛЯ ДЕБАГА
         // ========================
 
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(0.001), event -> {
-                    updateMapGraphics();
-                })
+/*        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.seconds(0.001), event -> updateMapGraphics())
         );
         timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
+        timeline.play();*/
     }
 
     /*===================================================
@@ -225,13 +219,13 @@ public class VisualizationController {
                         }
 
                         startCell = getCurrentObjectCell();
+                        startCell.setAsStart(true);
 
                         if (!isObjectCell) {
                             cell.setFill(Color.valueOf("#76ABAE"));
                             cell.setAsGoal(true);
 
                             if (goalCell != null) {
-
                                 goalCell.setFill(Color.valueOf("#EEEEEE"));
                                 goalCell.setAsGoal(false);
                             }
@@ -272,6 +266,8 @@ public class VisualizationController {
             GridPane.setHalignment(objects[i].getIcon(), HPos.CENTER);
             GridPane.setValignment(objects[i].getIcon(), VPos.CENTER);
 
+            Cell cell = (Cell) map.getChildren().get(objects[i].getY()*map.getColumnCount() + objects[i].getX());
+            cell.setAsObstacle(true);
             bitMap[objects[i].getY()][objects[i].getX()] = true;
         }
 
@@ -305,24 +301,10 @@ public class VisualizationController {
     }
 
     public void startSearching(){
-        int col = 0;
-        int row = 0;
-
-        while (col < map.getColumnCount() && row < map.getRowCount()){
-            Cell cell = (Cell) map.getChildren().get(row * map.getRowCount() + col);
-            cell.getCost(startCell, goalCell);
-            col++;
-            if (col == map.getColumnCount()){
-                col = 0;
-                row++;
-            }
-        }
-
         AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
 
-        scene.setOnMouseClicked(event -> {
-            algorithm.findPath();
-        });
+        scene.setOnMouseClicked(mouseEvent ->  algorithm.findPath());
+
     }
 
 

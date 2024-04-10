@@ -38,7 +38,6 @@ public class AStarAlgorithm {
     public void findPath(){
         int step = 0;
         while (!goalReached && step < MAX_STEPS){
-            boolean[] flags = new boolean[4];
             int col = GridPane.getColumnIndex(currentCell);
             int row = GridPane.getRowIndex(currentCell);
 
@@ -47,18 +46,16 @@ public class AStarAlgorithm {
             openList.remove(currentCell);
 
             if (row-1 >= 0)
-                openCell((Cell) map.getChildren().get((row-1)*map.getColumnCount() + col ));
+                openCell((Cell) map.getChildren().get((row-1)*map.getColumnCount() + col));
 
             if (col-1 >= 0)
-                openCell((Cell) map.getChildren().get(row*map.getColumnCount() + (col-1) ));
+                openCell((Cell) map.getChildren().get(row*map.getColumnCount() + (col-1)));
 
             if (row+1 < map.getRowCount())
                 openCell((Cell) map.getChildren().get((row+1)*map.getColumnCount() + col));
 
-
             if (col+1 < map.getColumnCount())
-                openCell((Cell) map.getChildren().get(row*map.getColumnCount() + (col+1) ));
-
+                openCell((Cell) map.getChildren().get(row*map.getColumnCount() + (col+1)));
 
             int bestCellIndex = 0;
             int bestCellFCost = Integer.MAX_VALUE;
@@ -74,7 +71,6 @@ public class AStarAlgorithm {
                     }
                 }
             }
-
 
             currentCell = openList.get(bestCellIndex);
 
@@ -99,10 +95,16 @@ public class AStarAlgorithm {
     }
 
     private void openCell(Cell cell) {
-        if (!cell.isOpen() && !cell.isChecked() && !cell.isObstacle()){
+        if ((!cell.isOpen() && !cell.isChecked() && !cell.isObstacle()) || cell.isStart()){
+            cell.getCost(startCell, goalCell);
             cell.setAsOpen(true);
             cell.setParent(currentCell);
             this.openList.add(cell);
+        }
+        else if (openList.isEmpty()){
+            System.out.println("i dont know why");
+            System.out.println("Size: " + openList.size());
+            System.out.println("col: " + GridPane.getColumnIndex(cell) + " | row: " + GridPane.getRowIndex(cell));
 
         }
     }

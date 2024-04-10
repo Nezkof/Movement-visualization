@@ -33,6 +33,9 @@ public class Cell extends Rectangle {
     public void setAsObstacle(boolean value) {
         this.isObstacle = value;
     }
+    public void setAsStart(boolean value) {
+        this.isStart = true;
+    }
     public void setAsGoal(boolean value){
         this.isGoal = value;
     }
@@ -69,6 +72,9 @@ public class Cell extends Rectangle {
     }
     public boolean isGoal(){
         return this.isGoal;
+    }
+    public boolean isStart() {
+        return this.isStart;
     }
     public boolean isOpen() {return this.isOpen;}
     public boolean isChecked() {return this.isChecked;}
