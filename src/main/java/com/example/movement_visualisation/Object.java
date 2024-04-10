@@ -25,46 +25,46 @@ public class Object {
         this.icon = new Circle(x,y, 10, Color.BLUE);
     }
 
-    public void Move(Scene scene, GridPane map, int[][] bitMap){
+    public void Move(Scene scene, GridPane map, boolean[][] bitMap){
             scene.setOnKeyPressed(event -> {
                 int rowIndex = this.y;
                 int colIndex = this.x;
 
                 switch (event.getCode()) {
                     case W:
-                        if (rowIndex > 0 && bitMap[rowIndex - 1][colIndex] == 0) {
-                            bitMap[getY()][getX()] = 0;
+                        if (rowIndex > 0 && !bitMap[rowIndex - 1][colIndex]) {
+                            setCellAsObstacle(false, map, bitMap);
                             map.getChildren().remove(this.icon);
                             map.add(this.icon, colIndex, rowIndex - 1);
                             this.setY(rowIndex - 1);
-                            bitMap[getY()][getX()] = 1;
+                            setCellAsObstacle(true, map, bitMap);
                         }
                         break;
                     case A:
-                        if (colIndex > 0 && bitMap[rowIndex][colIndex - 1] == 0) {
-                            bitMap[getY()][getX()] = 0;
+                        if (colIndex > 0 && !bitMap[rowIndex][colIndex - 1]) {
+                            setCellAsObstacle(false, map, bitMap);
                             map.getChildren().remove(this.icon);
                             map.add(this.icon, colIndex - 1, rowIndex);
                             this.setX(colIndex - 1);
-                            bitMap[getY()][getX()] = 1;
+                            setCellAsObstacle(true, map, bitMap);
                         }
                         break;
                     case S:
-                        if (rowIndex < map.getRowCount() - 1 && bitMap[rowIndex + 1][colIndex] == 0) {
-                            bitMap[getY()][getX()] = 0;
+                        if (rowIndex < map.getRowCount() - 1 && !bitMap[rowIndex + 1][colIndex]) {
+                            setCellAsObstacle(false, map, bitMap);
                             map.getChildren().remove(this.icon);
                             map.add(this.icon, colIndex, rowIndex + 1);
                             this.setY(rowIndex + 1);
-                            bitMap[getY()][getX()] = 1;
+                            setCellAsObstacle(true, map, bitMap);
                         }
                         break;
                     case D:
-                        if (colIndex < map.getColumnCount() - 1 && bitMap[rowIndex][colIndex + 1] == 0) {
-                            bitMap[getY()][getX()] = 0;
+                        if (colIndex < map.getColumnCount() - 1 && !bitMap[rowIndex][colIndex + 1]) {
+                            setCellAsObstacle(false, map, bitMap);
                             map.getChildren().remove(this.icon);
                             map.add(this.icon, colIndex + 1, rowIndex);
                             this.setX(colIndex + 1);
-                            bitMap[getY()][getX()] = 1;
+                            setCellAsObstacle(true, map, bitMap);
                         }
                         break;
                     default:
@@ -72,6 +72,8 @@ public class Object {
                 }
             });
     }
+
+
 
     public int getX(){ return this.x; }
 
@@ -89,5 +91,11 @@ public class Object {
     // ТЕСТИ
     //
     //==========================================
+
+    private void setCellAsObstacle(boolean value, GridPane map, boolean[][] bitMap) {
+        Cell cell = (Cell)map.getChildren().get(y*map.getColumnCount()+x);
+        cell.setAsObstacle(value);
+        bitMap[getY()][getX()] = value;
+    }
 
 }

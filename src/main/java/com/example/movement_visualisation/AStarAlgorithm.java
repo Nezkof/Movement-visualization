@@ -46,24 +46,18 @@ public class AStarAlgorithm {
             checkedList.add(currentCell);
             openList.remove(currentCell);
 
-            if (row-1 >= 0) {
-                 openCell((Cell) map.getChildren().get((row-1)*map.getColumnCount() + col ));
-            }
+            if (row-1 >= 0)
+                openCell((Cell) map.getChildren().get((row-1)*map.getColumnCount() + col ));
 
-
-            if (col-1 >= 0) {
+            if (col-1 >= 0)
                 openCell((Cell) map.getChildren().get(row*map.getColumnCount() + (col-1) ));
-            }
 
-
-            if (row+1 < map.getRowCount()) {
+            if (row+1 < map.getRowCount())
                 openCell((Cell) map.getChildren().get((row+1)*map.getColumnCount() + col));
-            }
 
 
-            if (col+1 < map.getColumnCount()) {
+            if (col+1 < map.getColumnCount())
                 openCell((Cell) map.getChildren().get(row*map.getColumnCount() + (col+1) ));
-            }
 
 
             int bestCellIndex = 0;
@@ -81,19 +75,18 @@ public class AStarAlgorithm {
                 }
             }
 
-            if (openList.isEmpty())
 
             currentCell = openList.get(bestCellIndex);
 
             if (currentCell == goalCell){
                 goalReached = true;
-                trachThePath();
+                trackThePath();
             }
             step++;
         }
     }
 
-    private void trachThePath(){
+    private void trackThePath(){
         Cell current = goalCell;
 
         while(current != startCell){

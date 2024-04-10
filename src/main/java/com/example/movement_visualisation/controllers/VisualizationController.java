@@ -37,7 +37,7 @@ public class VisualizationController {
     private int objectsNumber;
     private boolean isObstacles;
     private GridPane map;
-    private int[][] bitMap;
+    private boolean[][] bitMap;
     private Object[] objects;
 
     private Object selectedObject;
@@ -62,7 +62,7 @@ public class VisualizationController {
         validateData();
 
         this.objects = new Object[this.objectsNumber];
-        this.bitMap = new int[this.fieldHeight][this.fieldWidth];
+        this.bitMap = new boolean[this.fieldHeight][this.fieldWidth];
         this.scene = scene;
 
         startVisualization();
@@ -77,13 +77,14 @@ public class VisualizationController {
         // ========================
         // ДЛЯ ДЕБАГА
         // ========================
-/*        Timeline timeline = new Timeline(
+
+        Timeline timeline = new Timeline(
                 new KeyFrame(Duration.seconds(0.001), event -> {
                     updateMapGraphics();
                 })
         );
         timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();*/
+        timeline.play();
     }
 
     /*===================================================
@@ -181,10 +182,10 @@ public class VisualizationController {
             for (int j = 0; j < this.fieldWidth; ++j) {
                 if (isObstacles) {
                     for (int k = 0; k < this.fieldWidth/3; ++k)
-                        bitMap[i][random.nextInt(this.fieldWidth)] = 1;
+                        bitMap[i][random.nextInt(this.fieldWidth)] = true;
                     break;
                 }
-                bitMap[i][j] = 0;
+                bitMap[i][j] = false;
             }
         }
     }
@@ -194,10 +195,10 @@ public class VisualizationController {
             for (int j = 0; j < this.fieldWidth; j++) {
                 Cell cell = new Cell(50, 50);
 
-                if (bitMap[i][j] == 0) {
+                if (!bitMap[i][j]) {
                     cell.setFill(Color.valueOf("#EEEEEE"));
                 }
-                if (bitMap[i][j] == 1) {
+                if (bitMap[i][j]) {
                     cell.setAsObstacle(true);
                     cell.setFill(Color.valueOf("#31363F"));
                 }
@@ -263,7 +264,7 @@ public class VisualizationController {
             do {
                 cords[0] = random.nextInt(this.fieldWidth);
                 cords[1] = random.nextInt(this.fieldHeight);
-            } while (bitMap[cords[1]][cords[0]] == 1);
+            } while (bitMap[cords[1]][cords[0]]);
 
             objects[i] = new Object(cords[0], cords[1]);
 
@@ -271,7 +272,7 @@ public class VisualizationController {
             GridPane.setHalignment(objects[i].getIcon(), HPos.CENTER);
             GridPane.setValignment(objects[i].getIcon(), VPos.CENTER);
 
-            bitMap[objects[i].getY()][objects[i].getX()] = 1;
+            bitMap[objects[i].getY()][objects[i].getX()] = true;
         }
 
         selectedObject = objects[0];
@@ -334,8 +335,8 @@ public class VisualizationController {
     void updateMapGraphics() {
         for (int i = 0; i < fieldHeight; i++) {
             for (int j = 0; j < fieldWidth; j++) {
-                Rectangle cell = (Rectangle) map.getChildren().get(i * fieldWidth + j);
-                if (bitMap[i][j] == 1) {
+                Cell cell = (Cell) map.getChildren().get(i * fieldWidth + j);
+                if (cell.isObstacle()) {
                     cell.setFill(Color.valueOf("#31363F"));
                 } else {
                     cell.setFill(Color.valueOf("#EEEEEE"));
