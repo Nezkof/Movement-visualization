@@ -16,10 +16,12 @@ public class AStarAlgorithm {
     private Cell currentCell;
     private Cell startCell;
     private Cell goalCell;
+    private ArrayList<Cell> path;
 
     public AStarAlgorithm(){
         this.openList = new ArrayList<>();
         this.checkedList = new ArrayList<>();
+        this.path = new ArrayList<>();
         this.goalReached = false;
     }
 
@@ -32,10 +34,14 @@ public class AStarAlgorithm {
 
         this.openList = new ArrayList<>();
         this.checkedList = new ArrayList<>();
+        this.path = new ArrayList<>();
         this.goalReached = false;
     }
 
     public void findPath(){
+        if (!path.isEmpty())
+            path.clear();
+
         int step = 0;
         while (!goalReached && step < MAX_STEPS){
             int col = GridPane.getColumnIndex(currentCell);
@@ -78,7 +84,15 @@ public class AStarAlgorithm {
                 goalReached = true;
                 trackThePath();
             }
+
             step++;
+        }
+
+        ///////////////////////////////////////////////////////////
+        //дописати
+        ///////////////////////////////////////////////////////////
+        if (!goalReached){
+            System.out.println("Шлях не знайдено");
         }
     }
 
@@ -86,12 +100,15 @@ public class AStarAlgorithm {
         Cell current = goalCell;
 
         while(current != startCell){
+            this.path.add(current);
             current = current.getParentCell();
 
             if (current != startCell) {
                 current.setAsPath(true);
             }
         }
+
+        this.path.add(startCell);
     }
 
     private void openCell(Cell cell) {
@@ -101,11 +118,9 @@ public class AStarAlgorithm {
             cell.setParent(currentCell);
             this.openList.add(cell);
         }
-        else if (openList.isEmpty()){
-            System.out.println("i dont know why");
-            System.out.println("Size: " + openList.size());
-            System.out.println("col: " + GridPane.getColumnIndex(cell) + " | row: " + GridPane.getRowIndex(cell));
+    }
 
-        }
+    public ArrayList<Cell> getPath() {
+        return this.path;
     }
 }

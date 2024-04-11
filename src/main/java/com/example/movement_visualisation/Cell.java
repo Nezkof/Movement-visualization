@@ -59,6 +59,17 @@ public class Cell extends Rectangle {
     public void setHCost(int value) {
         this.hCost = value;
     }
+    public void resetCell(){
+        this.isOpen = false;
+        this.isChecked = false;
+        this.fCost = 0;
+        this.gCost = 0;
+        this.hCost = 0;
+        this.isStart = false;
+        this.isGoal = false;
+        this.parentCell = null;
+        //System.out.println("isObstacle: " + cell.isObstacle());
+    }
 
     /*===================================================
                           ГЕТТЕРИ

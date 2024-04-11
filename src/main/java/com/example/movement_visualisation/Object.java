@@ -1,12 +1,17 @@
 package com.example.movement_visualisation;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public class Object {
     private int x;
@@ -74,6 +79,31 @@ public class Object {
             });
     }
 
+    public void followPath(ArrayList<Cell> path, GridPane map, boolean[][] bitMap) {
+        if (path == null || path.isEmpty()) {
+            System.out.println("Пустий або невірний шлях");
+            return;
+        }
+
+        Timeline timeline = new Timeline();
+        for (int i = path.size() - 1; i >= 0; --i) {
+            int finalI = i;
+            timeline.getKeyFrames().add(
+                    new KeyFrame(Duration.seconds(0.5 * (path.size() - i)), event -> {
+                        setCellAsObstacle(false, map, bitMap);
+                        this.setX(GridPane.getColumnIndex(path.get(finalI)));
+                        this.setY(GridPane.getRowIndex(path.get(finalI)));
+                        map.getChildren().remove(this.icon);
+                        map.add(this.icon, GridPane.getColumnIndex(path.get(finalI)), GridPane.getRowIndex(path.get(finalI)));
+                        if (finalI == 0) {
+                            timeline.stop();
+                        }
+                        setCellAsObstacle(true, map, bitMap);
+                    })
+            );
+        }
+        timeline.play();
+    }
 
     public boolean isSelected() {
         return this.isSelected;

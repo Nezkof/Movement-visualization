@@ -5,6 +5,7 @@ import com.example.movement_visualisation.Object;
 import com.example.movement_visualisation.Cell;
 import com.example.movement_visualisation.enums.WarningCodes;
 
+import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
@@ -66,16 +67,11 @@ public class VisualizationController {
         setObjects();
         setupObjectClickHandlers();
 
-
-        // ========================
-        // ДЛЯ ДЕБАГА
-        // ========================
-
-/*        Timeline timeline = new Timeline(
+        Timeline timeline = new Timeline(
                 new KeyFrame(Duration.seconds(0.001), event -> updateMapGraphics())
         );
         timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();*/
+        timeline.play();
     }
 
     /*===================================================
@@ -157,7 +153,6 @@ public class VisualizationController {
         Timeline timeline = new Timeline(new KeyFrame(Duration.millis(delay), e -> showWarningWindow(message)));
         timeline.play();
     }
-
 
     /*===================================================
                        ГЕНЕРАЦІЯ КАРТИ
@@ -246,7 +241,7 @@ public class VisualizationController {
         VBox.getChildren().add(hbox);
     }
 
-    void setObjects() {
+    private void setObjects() {
         Random random = new Random();
         for (int i = 0; i < objects.length; ++i){
             int[] cords = new int[2];
@@ -274,44 +269,43 @@ public class VisualizationController {
         bitMap[object.getY()][object.getX()] = true;
     }
 
+    /*===================================================
+                    УПРАВЛІННЯ ОБ'ЄКТАМИ
+    ====================================================*/
+
     private void setupObjectClickHandlers() {
-        for (Object object : objects) {
+        for (Object object : objects)
             object.getIcon().setOnMouseClicked(event -> {
                 selectedObject = object;
                 selectedObject.Move(scene, map, bitMap);
             });
-        }
+    }
+
+    public void startSearching(){
+        for (Node node : map.getChildren())
+            if (node instanceof Cell)
+                ((Cell) node).resetCell();
+
+        AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
+        scene.setOnMouseClicked(mouseEvent ->  {
+            algorithm.findPath();
+            ArrayList<Cell> path = algorithm.getPath();
+            selectedObject.followPath(path, map, bitMap);
+        });
     }
 
     public Cell getCurrentObjectCell() {
-        for (Node node : map.getChildren()) {
-            if (GridPane.getColumnIndex(node) != null && GridPane.getRowIndex(node) != null) {
-                if (GridPane.getColumnIndex(node) == selectedObject.getX() && GridPane.getRowIndex(node) == selectedObject.getY()) {
+        for (Node node : map.getChildren())
+            if (GridPane.getColumnIndex(node) != null && GridPane.getRowIndex(node) != null)
+                if (GridPane.getColumnIndex(node) == selectedObject.getX() && GridPane.getRowIndex(node) == selectedObject.getY())
                     return (Cell) node;
-                }
-            }
-        }
+
         return null;
     }
 
-    //==========================================
-    //
-    // ТЕСТИ
-    //
-    //==========================================
 
-    public void startSearching(){
-        AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
 
-        scene.setOnMouseClicked(mouseEvent ->  algorithm.findPath());
 
-    }
-
-    //==========================================
-    //
-    // ДЛЯ ДЕБАГА
-    //
-    //==========================================
 
     void updateMapGraphics() {
         for (int i = 0; i < fieldHeight; i++) {
@@ -325,7 +319,4 @@ public class VisualizationController {
             }
         }
     }
-
-
-
 }
