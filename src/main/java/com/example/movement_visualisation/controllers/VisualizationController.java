@@ -8,12 +8,14 @@ import com.example.movement_visualisation.enums.WarningCodes;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -28,6 +30,18 @@ public class VisualizationController {
     @FXML private Pane warningWindow;
     @FXML private VBox VBox;
 
+    private final int[] WIDTH_INTERVAL = {10,30};
+    private final int[] HEIGHT_INTERVAL = {10,16};
+    private final int[] OBJECTSNUMBER_INTERVAL = {2,5};
+
+
+    private final String FIELD_COLOR = "#222831";
+    private final String CELL_HIGHLIGHT_COLOR = "#E3FEF7";
+    private final String OBSTACLE_COLOR = "#31363F";
+    private final String CELL_STROKE_COLOR = "#2d323b";
+    private final String HIGHLIGHT_OBJECT_STROKE_COLOR = "#EEEEEE";
+    private final String OBJECT_STROKE_COLOR = "#76ABAE";
+
     Scene scene;
     private int fieldHeight, fieldWidth;
     private int objectsNumber;
@@ -37,10 +51,6 @@ public class VisualizationController {
     private Object[] objects;
     private Object selectedObject;
     private Cell goalCell, startCell;
-
-    private final int[] WIDTH_INTERVAL = {10,30};
-    private final int[] HEIGHT_INTERVAL = {10,16};
-    private final int[] OBJECTSNUMBER_INTERVAL = {2,5};
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
@@ -65,13 +75,7 @@ public class VisualizationController {
     private void startVisualization() {
         generateMap();
         setObjects();
-        setObjectClickListeners();
-
-/*        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(0.001), event -> updateMapGraphics())
-        );
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();*/
+        objectClickListeners();
     }
 
     /*===================================================
@@ -180,56 +184,9 @@ public class VisualizationController {
         for (int i = 0; i < this.fieldHeight; i++) {
             for (int j = 0; j < this.fieldWidth; j++) {
                 Cell cell = new Cell(50, 50);
-
-                if (!bitMap[i][j]) {
-                    cell.setFill(Color.valueOf("#222831"));
-                }
-                if (bitMap[i][j]) {
-                    cell.setAsObstacle(true);
-                    cell.setFill(Color.valueOf("#31363F"));
-                }
-
-                cell.setOnMouseEntered(event -> {
-                    if (!cell.isObstacle() || cell.isGoal())
-                        cell.setStroke(Color.valueOf("#E3FEF7"));
-                });
-
-                cell.setOnMouseExited(event -> {
-                    if (!cell.isObstacle() && !cell.isGoal())
-                        cell.setStroke(Color.valueOf("#2d323b"));
-                });
-
-                cell.setOnMouseClicked(event -> {
-                    if (!cell.isObstacle() && !cell.isGoal()) {
-                        boolean isObjectCell = false;
-                        for (Object object : objects) {
-                            if (object.getX() == GridPane.getColumnIndex((Node) event.getSource())
-                                    && object.getY() == GridPane.getRowIndex((Node) event.getSource())) {
-                                isObjectCell = true;
-                                break;
-                            }
-                        }
-
-                        startCell = getCurrentObjectCell();
-
-                        if (!isObjectCell) {
-                            //cell.setFill(Color.valueOf("#76ABAE"));
-                            cell.setAsGoal(true);
-
-                            if (goalCell != null) {
-                                //goalCell.setFill(Color.valueOf("#EEEEEE"));
-                                goalCell.setAsGoal(false);
-                            }
-                            goalCell = cell;
-                        }
-                    }
-
-                    //startCell.setFill(Color.GREEN);
-                    startSearching();
-                });
-
-                cell.setStroke(Color.valueOf("#2d323b"));
+                configureCell(cell, i, j);
                 map.add(cell, j, i);
+
                 GridPane.setHalignment(cell, HPos.CENTER);
                 GridPane.setValignment(cell, VPos.CENTER);
             }
@@ -241,19 +198,34 @@ public class VisualizationController {
         VBox.getChildren().add(hbox);
     }
 
+    private void configureCell(Cell cell, int i, int j){
+        if (!bitMap[i][j]) {
+            cell.setFill(Color.valueOf(FIELD_COLOR));
+        }
+        if (bitMap[i][j]) {
+            cell.setAsObstacle(true);
+            cell.setFill(Color.valueOf(OBSTACLE_COLOR));
+        }
+
+        cell.setOnMouseEntered(this::handleMouseEntered);
+        cell.setOnMouseExited(this::handleMouseExited);
+        cell.setOnMouseClicked(this::handleMouseClicked);
+
+        cell.setStroke(Color.valueOf(CELL_STROKE_COLOR));
+    }
+
     private void setObjects() {
         Random random = new Random();
         for (int i = 0; i < objects.length; ++i){
-            int[] cords = new int[2];
-
+            int x, y;
             do {
-                cords[0] = random.nextInt(this.fieldWidth);
-                cords[1] = random.nextInt(this.fieldHeight);
-            } while (bitMap[cords[1]][cords[0]]);
+                x = random.nextInt(this.fieldWidth);
+                y = random.nextInt(this.fieldHeight);
+            } while (bitMap[y][x]);
 
-            objects[i] = new Object(cords[0], cords[1]);
+            objects[i] = new Object(x, y);
 
-            map.add(objects[i].getIcon(), cords[0], cords[1]);
+            map.add(objects[i].getIcon(), x, y);
             GridPane.setHalignment(objects[i].getIcon(), HPos.CENTER);
             GridPane.setValignment(objects[i].getIcon(), VPos.CENTER);
 
@@ -270,18 +242,62 @@ public class VisualizationController {
     }
 
     /*===================================================
-                    УПРАВЛІННЯ ОБ'ЄКТАМИ
+                   ОБРОБНИКИ ПОДІЙ ДЛЯ МИШІ
     ====================================================*/
 
-    private void setObjectClickListeners() {
+    private void handleMouseEntered(MouseEvent event) {
+        Cell cell = (Cell) event.getSource();
+        if (!cell.isObstacle() || cell.isGoal())
+            cell.setStroke(Color.valueOf(CELL_HIGHLIGHT_COLOR));
+    }
+
+    private void handleMouseExited(MouseEvent event) {
+        Cell cell = (Cell) event.getSource();
+        if (!cell.isObstacle() || cell.isGoal())
+            cell.setStroke(Color.valueOf(CELL_STROKE_COLOR));
+    }
+
+    private void handleMouseClicked(MouseEvent event) {
+        Cell cell = (Cell) event.getSource();
+        if (!cell.isObstacle() && !cell.isGoal()) {
+            boolean isObjectCell = false;
+            for (Object object : objects) {
+                if (object.getX() == GridPane.getColumnIndex((Node) event.getSource())
+                        && object.getY() == GridPane.getRowIndex((Node) event.getSource())) {
+                    isObjectCell = true;
+                    break;
+                }
+            }
+
+            startCell = getCurrentObjectCell();
+
+            if (!isObjectCell) {
+                cell.setAsGoal(true);
+
+                if (goalCell != null) {
+                    goalCell.setAsGoal(false);
+                }
+                goalCell = cell;
+            }
+        }
+
+        startSearching();
+    }
+
+    private void objectClickListeners() {
         for (Object object : objects)
             object.getIcon().setOnMouseClicked(event -> {
-                selectedObject.setIconStroke(Color.valueOf("#76ABAE"));
+                selectedObject.setIconStroke(Color.valueOf(OBJECT_STROKE_COLOR));
                 selectedObject = object;
-                selectedObject.setIconStroke(Color.valueOf("#EEEEEE"));
+                selectedObject.setIconStroke(Color.valueOf(HIGHLIGHT_OBJECT_STROKE_COLOR));
+
                 selectedObject.Move(scene, map, bitMap);
             });
     }
+
+    /*===================================================
+                    УПРАВЛІННЯ ОБ'ЄКТАМИ
+    ====================================================*/
 
     public void startSearching(){
         AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
@@ -304,21 +320,4 @@ public class VisualizationController {
 
         return null;
     }
-
-
-
-
-
-/*    void updateMapGraphics() {
-        for (int i = 0; i < fieldHeight; i++) {
-            for (int j = 0; j < fieldWidth; j++) {
-                Cell cell = (Cell) map.getChildren().get(i * fieldWidth + j);
-                if (cell.isObstacle()) {
-                    cell.setFill(Color.valueOf("#31363F"));
-                } else {
-                    cell.setFill(Color.valueOf("#EEEEEE"));
-                }
-            }
-        }
-    }*/
 }
