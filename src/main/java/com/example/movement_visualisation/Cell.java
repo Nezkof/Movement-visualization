@@ -34,24 +34,18 @@ public class Cell extends Rectangle {
         this.isObstacle = value;
     }
     public void setAsGoal(boolean value){
+        this.setFill(Color.RED);
         this.isGoal = value;
     }
     public void setAsOpen(boolean value) {
-        if (!this.isGoal)
-            //this.setFill(Color.valueOf("#adafb1"));
-            //this.setFill(Color.YELLOW);
         this.isOpen = value;
     }
     public void setAsChecked(boolean value){
-        if (!this.isGoal && !this.isStart)
-            //this.setFill(Color.valueOf("#7a7d82"));
-            //this.setFill(Color.ORANGE);
         this.isChecked = value;
     }
     public void setAsPath(boolean value){
         if (!this.isGoal && !this.isStart)
             this.setFill(Color.valueOf("#454a51"));
-            //this.setFill(Color.RED);
         this.isPath = value;
     }
     public void setParent(Cell parent) {

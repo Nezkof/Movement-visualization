@@ -50,7 +50,7 @@ public class VisualizationController {
     private boolean[][] bitMap;
     private Object[] objects;
     private Object selectedObject;
-    private Cell goalCell, startCell;
+    private Map<Object, Cell> objectGoalMap = new HashMap<>();
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
@@ -247,14 +247,18 @@ public class VisualizationController {
 
     private void handleMouseEntered(MouseEvent event) {
         Cell cell = (Cell) event.getSource();
-        if (!cell.isObstacle() || cell.isGoal())
-            cell.setStroke(Color.valueOf(CELL_HIGHLIGHT_COLOR));
+        Platform.runLater(() -> {
+            if (!cell.isObstacle() || cell.isGoal())
+                cell.setStroke(Color.valueOf(CELL_HIGHLIGHT_COLOR));
+        });
     }
 
     private void handleMouseExited(MouseEvent event) {
         Cell cell = (Cell) event.getSource();
-        if (!cell.isObstacle() || cell.isGoal())
-            cell.setStroke(Color.valueOf(CELL_STROKE_COLOR));
+        Platform.runLater(() -> {
+            if (!cell.isObstacle() || cell.isGoal())
+                cell.setStroke(Color.valueOf(CELL_STROKE_COLOR));
+        });
     }
 
     private void handleMouseClicked(MouseEvent event) {
@@ -269,55 +273,61 @@ public class VisualizationController {
                 }
             }
 
-            startCell = getCurrentObjectCell();
+            Cell clickedCell = getCurrentObjectCell(selectedObject);
+            clickedCell.setFill(Color.RED);
+            if (!isObjectCell && !clickedCell.isGoal()) {
+                clickedCell.setAsGoal(true);
+                objectGoalMap.put(selectedObject, cell);
 
-            if (!isObjectCell) {
-                cell.setAsGoal(true);
-
-                if (goalCell != null) {
-                    goalCell.setAsGoal(false);
-                }
-                goalCell = cell;
+                startSearching(clickedCell, objectGoalMap.get(selectedObject));
             }
         }
-
-        startSearching();
     }
 
     private void objectClickListeners() {
-        for (Object object : objects)
-            object.getIcon().setOnMouseClicked(event -> {
-                selectedObject.setIconStroke(Color.valueOf(OBJECT_STROKE_COLOR));
-                selectedObject = object;
-                selectedObject.setIconStroke(Color.valueOf(HIGHLIGHT_OBJECT_STROKE_COLOR));
+        for (Object object : objects) {
+            Thread objectThread = new Thread(() -> {
+                object.getIcon().setOnMouseClicked(event -> {
+                    Platform.runLater(() -> {
+                        selectedObject.setIconStroke(Color.valueOf(OBJECT_STROKE_COLOR));
+                        selectedObject = object;
+                        selectedObject.setIconStroke(Color.valueOf(HIGHLIGHT_OBJECT_STROKE_COLOR));
 
-                selectedObject.Move(scene, map, bitMap);
+                        selectedObject.Move(scene, map, bitMap);
+                    });
+                });
             });
+            objectThread.start();
+        }
     }
+
 
     /*===================================================
                     УПРАВЛІННЯ ОБ'ЄКТАМИ
     ====================================================*/
 
-    public void startSearching(){
-        AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
-        scene.setOnMouseClicked(mouseEvent ->  {
-            for (Node node : map.getChildren())
-                if (node instanceof Cell)
+    public void startSearching(Cell startCell, Cell goalCell) {
+        if (goalCell != null) {
+            for (Node node : map.getChildren()) {
+                if (node instanceof Cell) {
                     ((Cell) node).resetCell();
-
+                }
+            }
+            AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
             algorithm.findPath();
             ArrayList<Cell> path = algorithm.getPath();
             selectedObject.followPath(path, map, bitMap);
-        });
+        }
     }
 
-    public Cell getCurrentObjectCell() {
-        for (Node node : map.getChildren())
-            if (GridPane.getColumnIndex(node) != null && GridPane.getRowIndex(node) != null)
-                if (GridPane.getColumnIndex(node) == selectedObject.getX() && GridPane.getRowIndex(node) == selectedObject.getY())
+    public Cell getCurrentObjectCell(Object object) {
+        for (Node node : map.getChildren()) {
+            if (GridPane.getColumnIndex(node) != null && GridPane.getRowIndex(node) != null) {
+                if (GridPane.getColumnIndex(node) == object.getX() && GridPane.getRowIndex(node) == object.getY()) {
                     return (Cell) node;
-
+                }
+            }
+        }
         return null;
     }
 }
