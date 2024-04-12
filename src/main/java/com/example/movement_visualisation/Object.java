@@ -2,7 +2,7 @@ package com.example.movement_visualisation;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
@@ -10,8 +10,6 @@ import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 
 public class Object {
     private int x;
@@ -22,13 +20,15 @@ public class Object {
     Object() {
         this.x = 0;
         this.y = 0;
-        this.icon = new Circle(0,0,10, Color.BLUE);
+        this.icon = new Circle(0,0,15, Color.valueOf("#76ABAE"));
+        this.icon.setStroke(Color.valueOf("#31494a"));
     }
 
     public Object(int x, int y){
         this.x = x;
         this.y = y;
-        this.icon = new Circle(x,y, 10, Color.BLUE);
+        this.icon = new Circle(0,0,15, Color.valueOf("#76ABAE"));
+        this.icon.setStroke(Color.valueOf("#31494a"));
     }
 
     public void Move(Scene scene, GridPane map, boolean[][] bitMap){
@@ -117,9 +117,13 @@ public class Object {
     public void setX(int x){ this.x = x; }
 
     public void setY(int y){ this.y = y; }
+    public void setIconStroke(Color color) {
+        this.icon.setStroke(color);
+    }
     public void setSelected(boolean value) {
         this.isSelected = value;
     }
+
 
 
     //==========================================

@@ -8,7 +8,7 @@
 
 <AnchorPane fx:id="rootPane" prefHeight="840.0" prefWidth="1536.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.movement_visualisation.controllers.VisualizationController">
    <children>
-      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#31363f" height="840.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1536.0" />
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#222831" height="840.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1536.0" />
       <VBox fx:id="VBox" alignment="CENTER" prefHeight="840.0" prefWidth="1536.0" />
       <Pane fx:id="warningWindow" layoutY="640.0" prefHeight="200.0" prefWidth="1536.0" visible="false">
          <children>

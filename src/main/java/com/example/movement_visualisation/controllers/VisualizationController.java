@@ -40,7 +40,7 @@ public class VisualizationController {
 
     private final int[] WIDTH_INTERVAL = {10,30};
     private final int[] HEIGHT_INTERVAL = {10,16};
-    private final int[] OBJECTSNUMBER_INTERVAL = {2,10};
+    private final int[] OBJECTSNUMBER_INTERVAL = {2,5};
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
@@ -65,13 +65,13 @@ public class VisualizationController {
     private void startVisualization() {
         generateMap();
         setObjects();
-        setupObjectClickHandlers();
+        setObjectClickListeners();
 
-        Timeline timeline = new Timeline(
+/*        Timeline timeline = new Timeline(
                 new KeyFrame(Duration.seconds(0.001), event -> updateMapGraphics())
         );
         timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
+        timeline.play();*/
     }
 
     /*===================================================
@@ -182,7 +182,7 @@ public class VisualizationController {
                 Cell cell = new Cell(50, 50);
 
                 if (!bitMap[i][j]) {
-                    cell.setFill(Color.valueOf("#EEEEEE"));
+                    cell.setFill(Color.valueOf("#222831"));
                 }
                 if (bitMap[i][j]) {
                     cell.setAsObstacle(true);
@@ -191,12 +191,12 @@ public class VisualizationController {
 
                 cell.setOnMouseEntered(event -> {
                     if (!cell.isObstacle() || cell.isGoal())
-                        cell.setFill(Color.valueOf("#bdbdbd"));
+                        cell.setStroke(Color.valueOf("#E3FEF7"));
                 });
 
                 cell.setOnMouseExited(event -> {
                     if (!cell.isObstacle() && !cell.isGoal())
-                        cell.setFill(Color.valueOf("#EEEEEE"));
+                        cell.setStroke(Color.valueOf("#2d323b"));
                 });
 
                 cell.setOnMouseClicked(event -> {
@@ -213,22 +213,22 @@ public class VisualizationController {
                         startCell = getCurrentObjectCell();
 
                         if (!isObjectCell) {
-                            cell.setFill(Color.valueOf("#76ABAE"));
+                            //cell.setFill(Color.valueOf("#76ABAE"));
                             cell.setAsGoal(true);
 
                             if (goalCell != null) {
-                                goalCell.setFill(Color.valueOf("#EEEEEE"));
+                                //goalCell.setFill(Color.valueOf("#EEEEEE"));
                                 goalCell.setAsGoal(false);
                             }
                             goalCell = cell;
                         }
                     }
 
-                    startCell.setFill(Color.GREEN);
+                    //startCell.setFill(Color.GREEN);
                     startSearching();
                 });
 
-                cell.setStroke(Color.valueOf("#222831"));
+                cell.setStroke(Color.valueOf("#2d323b"));
                 map.add(cell, j, i);
                 GridPane.setHalignment(cell, HPos.CENTER);
                 GridPane.setValignment(cell, VPos.CENTER);
@@ -273,21 +273,23 @@ public class VisualizationController {
                     УПРАВЛІННЯ ОБ'ЄКТАМИ
     ====================================================*/
 
-    private void setupObjectClickHandlers() {
+    private void setObjectClickListeners() {
         for (Object object : objects)
             object.getIcon().setOnMouseClicked(event -> {
+                selectedObject.setIconStroke(Color.valueOf("#76ABAE"));
                 selectedObject = object;
+                selectedObject.setIconStroke(Color.valueOf("#EEEEEE"));
                 selectedObject.Move(scene, map, bitMap);
             });
     }
 
     public void startSearching(){
-        for (Node node : map.getChildren())
-            if (node instanceof Cell)
-                ((Cell) node).resetCell();
-
         AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
         scene.setOnMouseClicked(mouseEvent ->  {
+            for (Node node : map.getChildren())
+                if (node instanceof Cell)
+                    ((Cell) node).resetCell();
+
             algorithm.findPath();
             ArrayList<Cell> path = algorithm.getPath();
             selectedObject.followPath(path, map, bitMap);
@@ -307,7 +309,7 @@ public class VisualizationController {
 
 
 
-    void updateMapGraphics() {
+/*    void updateMapGraphics() {
         for (int i = 0; i < fieldHeight; i++) {
             for (int j = 0; j < fieldWidth; j++) {
                 Cell cell = (Cell) map.getChildren().get(i * fieldWidth + j);
@@ -318,5 +320,5 @@ public class VisualizationController {
                 }
             }
         }
-    }
+    }*/
 }

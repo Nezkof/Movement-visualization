@@ -2,6 +2,7 @@ package com.example.movement_visualisation;
 
 import com.example.movement_visualisation.Cell;
 import javafx.beans.property.adapter.JavaBeanStringProperty;
+import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
 
 import java.util.ArrayList;
