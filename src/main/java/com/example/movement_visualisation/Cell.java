@@ -2,7 +2,6 @@ package com.example.movement_visualisation;
 
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 
 public class Cell extends Rectangle {
@@ -13,7 +12,6 @@ public class Cell extends Rectangle {
     private boolean isStart;
     private boolean isGoal;
     private boolean isOpen;
-    private boolean isPath;
     private boolean isChecked;
     private boolean isObstacle;
 
@@ -23,8 +21,34 @@ public class Cell extends Rectangle {
         this.isGoal = false;
     }
 
+    public void getCost(Cell startCell, Cell goalCell) {
+        int xDist = Math.abs(GridPane.getColumnIndex(this) - GridPane.getColumnIndex(startCell));
+        int yDist = Math.abs(GridPane.getRowIndex(this) - GridPane.getRowIndex(startCell));
+        this.setGCost(xDist + yDist);
+
+        xDist = Math.abs(GridPane.getColumnIndex(this) - GridPane.getColumnIndex(goalCell));
+        yDist = Math.abs(GridPane.getRowIndex(this) - GridPane.getRowIndex(goalCell));
+        this.setHCost(xDist + yDist);
+
+        this.calculateFCost();
+    }
+
     public void calculateFCost(){
         this.fCost = this.hCost + this.gCost;
+    }
+
+    public void resetCell(boolean clearColors) {
+        if (clearColors)
+            if (!this.isObstacle || this.isOpen || this.isChecked || this.isGoal)
+                this.setFill(Color.valueOf("#222831"));
+        this.isOpen = false;
+        this.isChecked = false;
+        this.fCost = 0;
+        this.gCost = 0;
+        this.hCost = 0;
+        this.isStart = false;
+        this.isGoal = false;
+        this.parentCell = null;
     }
 
     /*===================================================
@@ -34,7 +58,6 @@ public class Cell extends Rectangle {
         this.isObstacle = value;
     }
     public void setAsGoal(boolean value){
-        this.setFill(Color.RED);
         this.isGoal = value;
     }
     public void setAsOpen(boolean value) {
@@ -43,10 +66,10 @@ public class Cell extends Rectangle {
     public void setAsChecked(boolean value){
         this.isChecked = value;
     }
-    public void setAsPath(boolean value){
+    public void setAsPath(){
         if (!this.isGoal && !this.isStart)
             this.setFill(Color.valueOf("#454a51"));
-        this.isPath = value;
+
     }
     public void setParent(Cell parent) {
         this.parentCell = parent;
@@ -56,19 +79,6 @@ public class Cell extends Rectangle {
     }
     public void setHCost(int value) {
         this.hCost = value;
-    }
-    public void resetCell() {
-        if (this.isOpen || this.isChecked || this.isGoal)
-            this.setFill(Color.valueOf("#222831"));
-        this.isOpen = false;
-        this.isChecked = false;
-        this.fCost = 0;
-        this.gCost = 0;
-        this.hCost = 0;
-        this.isStart = false;
-        this.isGoal = false;
-        this.parentCell = null;
-        //System.out.println("isObstacle: " + cell.isObstacle());
     }
 
     /*===================================================
@@ -84,29 +94,19 @@ public class Cell extends Rectangle {
     public boolean isStart() {
         return this.isStart;
     }
-    public boolean isOpen() {return this.isOpen;}
-    public boolean isChecked() {return this.isChecked;}
+    public boolean isOpen() {
+        return this.isOpen;
+    }
+    public boolean isChecked() {
+        return this.isChecked;
+    }
     public int getFCost() {
         return this.fCost;
-    }
-    public int getHCost() {
-        return this.hCost;
     }
     public int getGCost() {
         return this.gCost;
     }
     public Cell getParentCell(){
         return this.parentCell;
-    }
-    public void getCost(Cell startCell, Cell goalCell) {
-        int xDist = Math.abs(GridPane.getColumnIndex(this) - GridPane.getColumnIndex(startCell));
-        int yDist = Math.abs(GridPane.getRowIndex(this) - GridPane.getRowIndex(startCell));
-        this.setGCost(xDist + yDist);
-
-        xDist = Math.abs(GridPane.getColumnIndex(this) - GridPane.getColumnIndex(goalCell));
-        yDist = Math.abs(GridPane.getRowIndex(this) - GridPane.getRowIndex(goalCell));
-        this.setHCost(xDist + yDist);
-
-        this.calculateFCost();
     }
 }

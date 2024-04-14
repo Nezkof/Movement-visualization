@@ -1,11 +1,9 @@
 package com.example.movement_visualisation.controllers;
 
-import com.example.movement_visualisation.AStarAlgorithm;
 import com.example.movement_visualisation.Object;
 import com.example.movement_visualisation.Cell;
 import com.example.movement_visualisation.enums.WarningCodes;
 
-import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -34,13 +32,13 @@ public class VisualizationController {
     private final int[] HEIGHT_INTERVAL = {10,16};
     private final int[] OBJECTSNUMBER_INTERVAL = {2,5};
 
-
     private final String FIELD_COLOR = "#222831";
     private final String CELL_HIGHLIGHT_COLOR = "#E3FEF7";
     private final String OBSTACLE_COLOR = "#31363F";
     private final String CELL_STROKE_COLOR = "#2d323b";
     private final String HIGHLIGHT_OBJECT_STROKE_COLOR = "#EEEEEE";
     private final String OBJECT_STROKE_COLOR = "#76ABAE";
+    private final String OBJECT_ERROR_COLOR = "#f26065";
 
     Scene scene;
     private int fieldHeight, fieldWidth;
@@ -50,18 +48,18 @@ public class VisualizationController {
     private boolean[][] bitMap;
     private Object[] objects;
     private Object selectedObject;
-    private Map<Object, Cell> objectGoalMap = new HashMap<>();
+    private Map<Object, Cell> objectGoalMap;
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
     ====================================================*/
-    @FXML
-    void initialize (int fieldHeight, int fieldWidth, int objectsNumber, boolean isObstacles, Scene scene) {
+    @FXML void initialize (int fieldHeight, int fieldWidth, int objectsNumber, boolean isObstacles, Scene scene) {
         this.fieldHeight = fieldHeight;
         this.fieldWidth = fieldWidth;
         this.objectsNumber = objectsNumber;
         this.isObstacles = isObstacles;
         this.map = new GridPane();
+        this.objectGoalMap = new HashMap<>();
 
         validateData();
 
@@ -262,24 +260,30 @@ public class VisualizationController {
     }
 
     private void handleMouseClicked(MouseEvent event) {
-        Cell cell = (Cell) event.getSource();
-        if (!cell.isObstacle() && !cell.isGoal()) {
-            boolean isObjectCell = false;
-            for (Object object : objects) {
-                if (object.getX() == GridPane.getColumnIndex((Node) event.getSource())
-                        && object.getY() == GridPane.getRowIndex((Node) event.getSource())) {
-                    isObjectCell = true;
-                    break;
+        if (selectedObject.isEnable()){
+            Cell cell = (Cell) event.getSource();
+            if (!cell.isObstacle() && !cell.isGoal()) {
+                boolean isObjectCell = false;
+                for (Object object : objects) {
+                    if (object.getX() == GridPane.getColumnIndex((Node) event.getSource())
+                            && object.getY() == GridPane.getRowIndex((Node) event.getSource())) {
+                        isObjectCell = true;
+                        break;
+                    }
                 }
-            }
 
-            Cell clickedCell = getCurrentObjectCell(selectedObject);
-            clickedCell.setFill(Color.RED);
-            if (!isObjectCell && !clickedCell.isGoal()) {
-                clickedCell.setAsGoal(true);
-                objectGoalMap.put(selectedObject, cell);
+                Cell objectCell = selectedObject.getCurrentObjectCell(map);
+                if (!isObjectCell)
+                    if (!objectGoalMap.containsValue(cell)) {
+                        cell.setAsGoal(true);
+                        objectGoalMap.put(selectedObject, cell);
 
-                startSearching(clickedCell, objectGoalMap.get(selectedObject));
+                        selectedObject.startSearching(map, bitMap, objectGoalMap, objectCell, objectGoalMap.get(selectedObject), objectCell);
+                        cell.setFill(Color.RED);
+                    }
+                    else {
+                        selectedObject.getIcon().setFill(Color.valueOf(OBJECT_ERROR_COLOR));
+                    }
             }
         }
     }
@@ -288,6 +292,8 @@ public class VisualizationController {
         for (Object object : objects) {
             Thread objectThread = new Thread(() -> {
                 object.getIcon().setOnMouseClicked(event -> {
+                    if (!object.isEnable())
+                        return;
                     Platform.runLater(() -> {
                         selectedObject.setIconStroke(Color.valueOf(OBJECT_STROKE_COLOR));
                         selectedObject = object;
@@ -301,33 +307,4 @@ public class VisualizationController {
         }
     }
 
-
-    /*===================================================
-                    УПРАВЛІННЯ ОБ'ЄКТАМИ
-    ====================================================*/
-
-    public void startSearching(Cell startCell, Cell goalCell) {
-        if (goalCell != null) {
-            for (Node node : map.getChildren()) {
-                if (node instanceof Cell) {
-                    ((Cell) node).resetCell();
-                }
-            }
-            AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
-            algorithm.findPath();
-            ArrayList<Cell> path = algorithm.getPath();
-            selectedObject.followPath(path, map, bitMap);
-        }
-    }
-
-    public Cell getCurrentObjectCell(Object object) {
-        for (Node node : map.getChildren()) {
-            if (GridPane.getColumnIndex(node) != null && GridPane.getRowIndex(node) != null) {
-                if (GridPane.getColumnIndex(node) == object.getX() && GridPane.getRowIndex(node) == object.getY()) {
-                    return (Cell) node;
-                }
-            }
-        }
-        return null;
-    }
 }

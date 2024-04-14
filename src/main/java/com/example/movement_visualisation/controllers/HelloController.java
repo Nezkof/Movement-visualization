@@ -8,6 +8,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -24,6 +26,7 @@ public class HelloController {
     @FXML private CheckBox button_isObstacles;
     @FXML private Text errorText;
     @FXML private Pane errorWindow;
+    @FXML private ImageView background;
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
@@ -101,9 +104,4 @@ public class HelloController {
             @Override public void run() { errorWindow.setVisible(false); }
         }, 2000);
     }
-
-
-
-
-
 }

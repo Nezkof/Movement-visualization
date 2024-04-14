@@ -1,30 +1,17 @@
 package com.example.movement_visualisation;
 
-import com.example.movement_visualisation.Cell;
-import javafx.beans.property.adapter.JavaBeanStringProperty;
-import javafx.scene.Node;
 import javafx.scene.layout.GridPane;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class AStarAlgorithm {
-    private int MAX_STEPS;
-    private GridPane map;
-    private ArrayList<Cell> openList;
-    private ArrayList<Cell> checkedList;
+    private final int MAX_STEPS;
     private boolean goalReached;
+    private final GridPane map;
     private Cell currentCell;
-    private Cell startCell;
-    private Cell goalCell;
-    private ArrayList<Cell> path;
-
-    public AStarAlgorithm(){
-        this.openList = new ArrayList<>();
-        this.checkedList = new ArrayList<>();
-        this.path = new ArrayList<>();
-        this.goalReached = false;
-    }
+    private final Cell startCell;
+    private final Cell goalCell;
+    private final ArrayList<Cell> openList;
+    private final ArrayList<Cell> path;
 
     public AStarAlgorithm(Cell startCell, Cell goalCell, GridPane map){
         this.MAX_STEPS = map.getColumnCount()*map.getRowCount();
@@ -34,12 +21,11 @@ public class AStarAlgorithm {
         this.map = map;
 
         this.openList = new ArrayList<>();
-        this.checkedList = new ArrayList<>();
         this.path = new ArrayList<>();
         this.goalReached = false;
     }
 
-    public void findPath(){
+    public void findPath() throws Exception {
         if (!path.isEmpty())
             path.clear();
 
@@ -49,7 +35,6 @@ public class AStarAlgorithm {
             int row = GridPane.getRowIndex(currentCell);
 
             currentCell.setAsChecked(true);
-            checkedList.add(currentCell);
             openList.remove(currentCell);
 
             if (row-1 >= 0)
@@ -79,34 +64,33 @@ public class AStarAlgorithm {
                 }
             }
 
-            currentCell = openList.get(bestCellIndex);
+            try {
+                currentCell = openList.get(bestCellIndex);
+            }
+            catch (Exception ex) {
+                throw new Exception("Can't reach the goal");
+            }
 
             if (currentCell == goalCell){
                 goalReached = true;
                 trackThePath();
             }
-
             step++;
         }
 
-        ///////////////////////////////////////////////////////////
-        //дописати
-        ///////////////////////////////////////////////////////////
-        if (!goalReached){
+        if (!goalReached)
             System.out.println("Шлях не знайдено");
-        }
     }
 
     private void trackThePath(){
         Cell current = goalCell;
 
-        while(current != startCell){
+        while(current != startCell) {
             this.path.add(current);
             current = current.getParentCell();
 
-            if (current != startCell) {
-                current.setAsPath(true);
-            }
+            if (current != startCell)
+                current.setAsPath();
         }
 
         this.path.add(startCell);

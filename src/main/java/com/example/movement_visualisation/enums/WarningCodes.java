@@ -19,7 +19,6 @@ public enum WarningCodes {
     public int getCode() {
         return code;
     }
-
     public String getMessage(int value) {
         return String.format(message, value);
     }
