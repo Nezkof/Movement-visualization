@@ -88,17 +88,21 @@ public class Object {
                 }
             }
 
-            AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
-            goalCell.setFill(Color.BLUE);
-            try {
-                algorithm.findPath();
-            } catch (Exception e) {
-                this.getIcon().setFill(Color.valueOf("#f26065"));
-                this.setEnable(true);
-                return;
-            }
+        AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
+        goalCell.setFill(Color.BLUE);
+        try {
+            algorithm.findPath();
+        } catch (Exception e) {
+            this.getIcon().setFill(Color.valueOf("#f26065"));
+            this.setEnable(true);
+            goalCell.resetCell(true);
+            goalCell.setFill(Color.valueOf("#222831"));
+            if (!objectGoalMap.isEmpty())
+                objectGoalMap.clear();
+            return;
+        }
 
-            this.followPath(algorithm.getPath(), map, bitMap, objectCell, objectGoalMap);
+        this.followPath(algorithm.getPath(), map, bitMap, objectCell, objectGoalMap);
         }
     }
 
@@ -117,25 +121,37 @@ public class Object {
         for (int i = path.size() - 1; i >= 0; --i) {
             int finalI = i;
             timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(0.5 * (path.size() - i)), event -> {
-                        setCellAsObstacle(false, map, bitMap);
-                        for (int cell = 0; cell < path.size(); ++cell) {
-                            if (path.get(cell).isObstacle() && !checkedPath[cell]) {
-                                this.startSearching(map, bitMap, objectGoalMap, this.getCurrentObjectCell(map), objectGoalMap.get(this), objectCell);
-                                path.clear();
+                setCellAsObstacle(false, map, bitMap);
+                for (int cell = 0; cell < path.size(); ++cell) {
+                    if (path.get(cell).isObstacle() && !checkedPath[cell]) {
+                        this.startSearching(map, bitMap, objectGoalMap, this.getCurrentObjectCell(map), objectGoalMap.get(this), objectCell);
+                        path.clear();
+                    }
+                }
+                checkedPath[finalI] = true;
+                if (!path.isEmpty()) {
+                    this.setX(GridPane.getColumnIndex(path.get(finalI)));
+                    this.setY(GridPane.getRowIndex(path.get(finalI)));
+                    map.getChildren().remove(this.icon);
+                    map.add(this.icon, GridPane.getColumnIndex(path.get(finalI)), GridPane.getRowIndex(path.get(finalI)));
+                    setCellAsObstacle(true, map, bitMap);
+
+                    if (objectGoalMap.containsValue(path.get(finalI))) {
+                        for (Map.Entry<Object, Cell> entry : objectGoalMap.entrySet()) {
+                            if (entry.getValue().equals(path.get(finalI))) {
+                                objectGoalMap.remove(entry.getKey());
+                                break;
                             }
                         }
-                        checkedPath[finalI] = true;
-                        if (!path.isEmpty()) {
-                            this.setX(GridPane.getColumnIndex(path.get(finalI)));
-                            this.setY(GridPane.getRowIndex(path.get(finalI)));
-                            map.getChildren().remove(this.icon);
-                            map.add(this.icon, GridPane.getColumnIndex(path.get(finalI)), GridPane.getRowIndex(path.get(finalI)));
-                            setCellAsObstacle(true, map, bitMap);
-                        }
+                    }
+                }
+
             }));
         }
 
-        timeline.setOnFinished(e -> isEnable = true);
+        timeline.setOnFinished(e -> {
+            isEnable = true;
+        });
         timeline.play();
     }
 

@@ -8,8 +8,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -19,21 +17,19 @@ import java.util.TimerTask;
 import static java.lang.Integer.parseInt;
 
 public class HelloController {
-    @FXML private TextField textField_Width;
-    @FXML private TextField textField_Height;
-    @FXML private TextField textField_objectsNumber;
+    @FXML private TextField textFieldWidth;
+    @FXML private TextField textFieldHeight;
+    @FXML private TextField textFieldObjectsNumber;
     @FXML private Button startButton;
     @FXML private CheckBox button_isObstacles;
     @FXML private Text errorText;
     @FXML private Pane errorWindow;
-    @FXML private ImageView background;
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
     ====================================================*/
 
-    @FXML
-    void initialize() {
+    @FXML void initialize() {
         startButton.setOnAction(actionEvent -> {
             validateData();
             loadVisualizationWindow();
@@ -54,9 +50,9 @@ public class HelloController {
 
             VisualizationController visualizationController = visualizationWindow.getController();
             visualizationController.initialize (
-                    parseInt(textField_Height.getText()),
-                    parseInt(textField_Width.getText()),
-                    parseInt(textField_objectsNumber.getText()),
+                    parseInt(textFieldHeight.getText()),
+                    parseInt(textFieldWidth.getText()),
+                    parseInt(textFieldObjectsNumber.getText()),
                     button_isObstacles.isSelected(),
                     scene
             );
@@ -84,14 +80,14 @@ public class HelloController {
     }
 
     int getErrorCode() {
-        if (textField_Height.getText().trim().isEmpty()) return 101;
-        else if (!textField_Height.getText().trim().matches("\\d+")) return 102;
+        if (textFieldHeight.getText().trim().isEmpty()) return 101;
+        else if (!textFieldHeight.getText().trim().matches("\\d+")) return 102;
 
-        if (textField_Width.getText().trim().isEmpty()) return 201;
-        else if (!textField_Width.getText().trim().matches("\\d+")) return 202;
+        if (textFieldWidth.getText().trim().isEmpty()) return 201;
+        else if (!textFieldWidth.getText().trim().matches("\\d+")) return 202;
 
-        if (textField_objectsNumber.getText().trim().isEmpty()) return 301;
-        else if (!textField_objectsNumber.getText().trim().matches("\\d+")) return 302;
+        if (textFieldObjectsNumber.getText().trim().isEmpty()) return 301;
+        else if (!textFieldObjectsNumber.getText().trim().matches("\\d+")) return 302;
 
         return 0;
     }

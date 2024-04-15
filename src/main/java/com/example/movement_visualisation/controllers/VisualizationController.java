@@ -73,7 +73,6 @@ public class VisualizationController {
     private void startVisualization() {
         generateMap();
         setObjects();
-        objectClickListeners();
     }
 
     /*===================================================
@@ -159,12 +158,12 @@ public class VisualizationController {
     /*===================================================
                        ГЕНЕРАЦІЯ КАРТИ
     ====================================================*/
-    void generateMap() {
+    private void generateMap() {
         generateBitMap();
         setCells();
     }
 
-    void generateBitMap(){
+    private void generateBitMap(){
         Random random = new Random();
         for (int i = 0; i < this.fieldHeight; ++i) {
             for (int j = 0; j < this.fieldWidth; ++j) {
@@ -178,7 +177,7 @@ public class VisualizationController {
         }
     }
 
-    void setCells() {
+    private void setCells() {
         for (int i = 0; i < this.fieldHeight; i++) {
             for (int j = 0; j < this.fieldWidth; j++) {
                 Cell cell = new Cell(50, 50);
@@ -231,6 +230,8 @@ public class VisualizationController {
         }
 
         selectedObject = objects[0];
+
+        setObjectClickListeners();
     }
 
     private void placeObjectObstacles(Object object) {
@@ -279,7 +280,6 @@ public class VisualizationController {
                         objectGoalMap.put(selectedObject, cell);
 
                         selectedObject.startSearching(map, bitMap, objectGoalMap, objectCell, objectGoalMap.get(selectedObject), objectCell);
-                        cell.setFill(Color.RED);
                     }
                     else {
                         selectedObject.getIcon().setFill(Color.valueOf(OBJECT_ERROR_COLOR));
@@ -288,7 +288,7 @@ public class VisualizationController {
         }
     }
 
-    private void objectClickListeners() {
+    private void setObjectClickListeners() {
         for (Object object : objects) {
             Thread objectThread = new Thread(() -> {
                 object.getIcon().setOnMouseClicked(event -> {
