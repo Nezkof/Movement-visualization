@@ -31,62 +31,51 @@ public class Object {
     ====================================================*/
 
     public void Move(Scene scene, GridPane map, boolean[][] bitMap){
-            scene.setOnKeyPressed(event -> {
-                if (!this.isEnable)
-                    return;
-                icon.setFill(Color.valueOf("#76ABAE"));
-                int rowIndex = this.y;
-                int colIndex = this.x;
+        scene.setOnKeyPressed(event -> {
+            if (!this.isEnable)
+                return;
+            icon.setFill(Color.valueOf("#76ABAE"));
 
-                switch (event.getCode()) {
-                    case W:
-                        if (rowIndex > 0 && !bitMap[rowIndex - 1][colIndex]) {
-                            setCellAsObstacle(false, map, bitMap);
-                            map.getChildren().remove(this.icon);
-                            map.add(this.icon, colIndex, rowIndex - 1);
-                            this.setY(rowIndex - 1);
-                            setCellAsObstacle(true, map, bitMap);
-                        }
-                        break;
-                    case A:
-                        if (colIndex > 0 && !bitMap[rowIndex][colIndex - 1]) {
-                            setCellAsObstacle(false, map, bitMap);
-                            map.getChildren().remove(this.icon);
-                            map.add(this.icon, colIndex - 1, rowIndex);
-                            this.setX(colIndex - 1);
-                            setCellAsObstacle(true, map, bitMap);
-                        }
-                        break;
-                    case S:
-                        if (rowIndex < map.getRowCount() - 1 && !bitMap[rowIndex + 1][colIndex]) {
-                            setCellAsObstacle(false, map, bitMap);
-                            map.getChildren().remove(this.icon);
-                            map.add(this.icon, colIndex, rowIndex + 1);
-                            this.setY(rowIndex + 1);
-                            setCellAsObstacle(true, map, bitMap);
-                        }
-                        break;
-                    case D:
-                        if (colIndex < map.getColumnCount() - 1 && !bitMap[rowIndex][colIndex + 1]) {
-                            setCellAsObstacle(false, map, bitMap);
-                            map.getChildren().remove(this.icon);
-                            map.add(this.icon, colIndex + 1, rowIndex);
-                            this.setX(colIndex + 1);
-                            setCellAsObstacle(true, map, bitMap);
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            });
+            int newRow = this.y;
+            int newCol = this.x;
+
+            switch (event.getCode()) {
+                case W:
+                    newRow = this.y - 1;
+                     break;
+                case A:
+                    newCol = this.x - 1;
+                    break;
+                case S:
+                    newRow = this.y + 1;
+                    break;
+                case D:
+                    newCol = this.x + 1;
+                    break;
+                default:
+                    break;
+            }
+
+            if (isValidMove(newRow, newCol, map, bitMap)) {
+                setCellAsObstacle(false, map, bitMap);
+                map.getChildren().remove(this.icon);
+                map.add(this.icon, newCol, newRow);
+                this.setX(newCol);
+                this.setY(newRow);
+                setCellAsObstacle(true, map, bitMap);
+            }
+        });
     }
+
+    private boolean isValidMove(int newRow, int newCol, GridPane map, boolean[][] bitMap) {
+        return (newRow >= 0 && newRow < map.getRowCount() && newCol >= 0 && newCol < map.getColumnCount()) && !bitMap[newRow][newCol];
+    }
+
     public void startSearching(GridPane map, boolean[][] bitMap, Map<Object, Cell> objectGoalMap, Cell startCell, Cell goalCell, Cell objectCell) {
         if (goalCell != null) {
-            for (Node node : map.getChildren()) {
-                if (node instanceof Cell) {
-                    ((Cell) node).resetCell(true);
-                }
-            }
+            for (Node node : map.getChildren())
+                if (node instanceof Cell)
+                    ((Cell) node).resetCell();
 
         AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
         goalCell.setFill(Color.BLUE);
@@ -95,7 +84,7 @@ public class Object {
         } catch (Exception e) {
             this.getIcon().setFill(Color.valueOf("#f26065"));
             this.setEnable(true);
-            goalCell.resetCell(true);
+            goalCell.resetCell();
             goalCell.setFill(Color.valueOf("#222831"));
             if (!objectGoalMap.isEmpty())
                 objectGoalMap.clear();

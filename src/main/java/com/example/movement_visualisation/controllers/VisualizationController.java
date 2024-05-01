@@ -13,6 +13,7 @@ import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -21,7 +22,6 @@ import javafx.util.Duration;
 
 import java.util.*;
 
-import static java.lang.Integer.parseInt;
 
 public class VisualizationController {
     @FXML private Text warningText;
@@ -31,14 +31,15 @@ public class VisualizationController {
     private final int[] WIDTH_INTERVAL = {10,30};
     private final int[] HEIGHT_INTERVAL = {10,16};
     private final int[] OBJECTSNUMBER_INTERVAL = {2,5};
-
-    private final String FIELD_COLOR = "#222831";
-    private final String CELL_HIGHLIGHT_COLOR = "#E3FEF7";
-    private final String OBSTACLE_COLOR = "#31363F";
-    private final String CELL_STROKE_COLOR = "#2d323b";
-    private final String HIGHLIGHT_OBJECT_STROKE_COLOR = "#EEEEEE";
-    private final String OBJECT_STROKE_COLOR = "#76ABAE";
-    private final String OBJECT_ERROR_COLOR = "#f26065";
+    private final String[] INTERFACE_COLORS = {
+            "#222831", //field
+            "#E3FEF7", //cell_highlight
+            "#31363F", //obstacle
+            "#2d323b", //cell_stroke
+            "#EEEEEE", //highlight_object_stroke
+            "#76ABAE", //object_stroke
+            "#f26065" // object_error
+    };
 
     Scene scene;
     private int fieldHeight, fieldWidth;
@@ -80,17 +81,14 @@ public class VisualizationController {
     ====================================================*/
 
     private void validateData() {
-        String codes = getWarningCode();
+        ArrayList<Integer> codes = getWarningCode();
         if (codes.isEmpty())
             return;
 
-        String[] warningCodes = codes.split("\\s+");
         int delay = 500;
-
-        for (String code : warningCodes) {
-            int warningCode = parseInt(code);
+        for (int code : codes) {
             for (WarningCodes enumValue : WarningCodes.values()) {
-                if (enumValue.getCode() == warningCode) {
+                if (enumValue.getCode() == code) {
                     String message = enumValue.getMessage(getOptimalValueForCode(enumValue));
                     addDelayMessage(message, delay);
                     setOptimalValueForCode(enumValue);
@@ -129,16 +127,16 @@ public class VisualizationController {
         }
     }
 
-    private String getWarningCode(){
-        StringBuilder resultCodes = new StringBuilder();
-        if (this.fieldWidth > WIDTH_INTERVAL[1]) resultCodes.append("101 ");
-        if (this.fieldWidth < WIDTH_INTERVAL[0]) resultCodes.append("102 ");
-        if (this.fieldHeight > HEIGHT_INTERVAL[1]) resultCodes.append("201 ");
-        if (this.fieldHeight < HEIGHT_INTERVAL[0]) resultCodes.append("202 ");
-        if (this.objectsNumber > OBJECTSNUMBER_INTERVAL[1]) resultCodes.append("301 ");
-        if (this.objectsNumber < OBJECTSNUMBER_INTERVAL[0]) resultCodes.append("302");
+    private ArrayList<Integer> getWarningCode(){
+        ArrayList<Integer> codes = new ArrayList<>();
+        if (this.fieldWidth > WIDTH_INTERVAL[1]) codes.add(101);
+        if (this.fieldWidth < WIDTH_INTERVAL[0]) codes.add(102);
+        if (this.fieldHeight > HEIGHT_INTERVAL[1]) codes.add(201);
+        if (this.fieldHeight < HEIGHT_INTERVAL[0]) codes.add(202);
+        if (this.objectsNumber > OBJECTSNUMBER_INTERVAL[1]) codes.add(301);
+        if (this.objectsNumber < OBJECTSNUMBER_INTERVAL[0]) codes.add(302);
 
-        return String.valueOf(resultCodes);
+        return codes;
     }
 
     private void showWarningWindow(String msg) {
@@ -197,18 +195,25 @@ public class VisualizationController {
 
     private void configureCell(Cell cell, int i, int j){
         if (!bitMap[i][j]) {
-            cell.setFill(Color.valueOf(FIELD_COLOR));
+            cell.setFill(Color.valueOf(INTERFACE_COLORS[0]));
         }
         if (bitMap[i][j]) {
             cell.setAsObstacle(true);
-            cell.setFill(Color.valueOf(OBSTACLE_COLOR));
+            cell.setFill(Color.valueOf(INTERFACE_COLORS[2]));
         }
 
         cell.setOnMouseEntered(this::handleMouseEntered);
         cell.setOnMouseExited(this::handleMouseExited);
-        cell.setOnMouseClicked(this::handleMouseClicked);
 
-        cell.setStroke(Color.valueOf(CELL_STROKE_COLOR));
+        cell.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.SECONDARY) {
+                handleMouseRightClicked(event);
+            } else {
+                handleMouseClicked(event);
+            }
+        });
+
+        cell.setStroke(Color.valueOf(INTERFACE_COLORS[3]));
     }
 
     private void setObjects() {
@@ -248,7 +253,7 @@ public class VisualizationController {
         Cell cell = (Cell) event.getSource();
         Platform.runLater(() -> {
             if (!cell.isObstacle() || cell.isGoal())
-                cell.setStroke(Color.valueOf(CELL_HIGHLIGHT_COLOR));
+                cell.setStroke(Color.valueOf(INTERFACE_COLORS[1]));
         });
     }
 
@@ -256,7 +261,7 @@ public class VisualizationController {
         Cell cell = (Cell) event.getSource();
         Platform.runLater(() -> {
             if (!cell.isObstacle() || cell.isGoal())
-                cell.setStroke(Color.valueOf(CELL_STROKE_COLOR));
+                cell.setStroke(Color.valueOf(INTERFACE_COLORS[3]));
         });
     }
 
@@ -282,9 +287,24 @@ public class VisualizationController {
                         selectedObject.startSearching(map, bitMap, objectGoalMap, objectCell, objectGoalMap.get(selectedObject), objectCell);
                     }
                     else {
-                        selectedObject.getIcon().setFill(Color.valueOf(OBJECT_ERROR_COLOR));
+                        selectedObject.getIcon().setFill(Color.valueOf(INTERFACE_COLORS[6]));
                     }
             }
+        }
+    }
+
+    private void handleMouseRightClicked(MouseEvent event) {
+        Cell cell = (Cell) event.getSource();
+        if (!cell.isGoal() && !cell.isObstacle()) {
+            cell.setAsObstacle(true);
+            bitMap[GridPane.getRowIndex(cell)][GridPane.getColumnIndex(cell)] = true;
+            cell.setFill(Color.valueOf(INTERFACE_COLORS[2]));
+            cell.setStroke(Color.valueOf(INTERFACE_COLORS[3]));
+        } else if (!cell.isGoal()) {
+            cell.setAsObstacle(false);
+            bitMap[GridPane.getRowIndex(cell)][GridPane.getColumnIndex(cell)] = false;
+            cell.setFill(Color.valueOf(INTERFACE_COLORS[0]));
+            cell.setStroke(Color.valueOf(INTERFACE_COLORS[3]));
         }
     }
 
@@ -295,9 +315,9 @@ public class VisualizationController {
                     if (!object.isEnable())
                         return;
                     Platform.runLater(() -> {
-                        selectedObject.setIconStroke(Color.valueOf(OBJECT_STROKE_COLOR));
+                        selectedObject.setIconStroke(Color.valueOf(INTERFACE_COLORS[5]));
                         selectedObject = object;
-                        selectedObject.setIconStroke(Color.valueOf(HIGHLIGHT_OBJECT_STROKE_COLOR));
+                        selectedObject.setIconStroke(Color.valueOf(INTERFACE_COLORS[4]));
 
                         selectedObject.Move(scene, map, bitMap);
                     });

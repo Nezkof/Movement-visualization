@@ -30,16 +30,12 @@ public class Cell extends Rectangle {
         yDist = Math.abs(GridPane.getRowIndex(this) - GridPane.getRowIndex(goalCell));
         this.setHCost(xDist + yDist);
 
-        this.calculateFCost();
-    }
-
-    public void calculateFCost(){
         this.fCost = this.hCost + this.gCost;
     }
 
-    public void resetCell(boolean clearColors) {
-        if (clearColors)
-            if (!this.isObstacle || this.isOpen || this.isChecked || this.isGoal)
+    public void resetCell() {
+        if (!this.isObstacle)
+            if (this.isOpen || this.isChecked || this.isGoal)
                 this.setFill(Color.valueOf("#222831"));
         this.isOpen = false;
         this.isChecked = false;
@@ -69,7 +65,6 @@ public class Cell extends Rectangle {
     public void setAsPath(){
         if (!this.isGoal && !this.isStart)
             this.setFill(Color.valueOf("#454a51"));
-
     }
     public void setParent(Cell parent) {
         this.parentCell = parent;
