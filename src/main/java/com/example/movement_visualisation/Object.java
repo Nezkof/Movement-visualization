@@ -6,10 +6,10 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Path;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -33,39 +33,16 @@ public class Object {
                            РУХ ОБ'ЄКТА
     ====================================================*/
 
-    public void Move(Scene scene, GridPane map, boolean[][] bitMap){
+    public void move(Scene scene, GridPane map, boolean[][] bitMap) {
         scene.setOnKeyPressed(event -> {
-            if (!this.isEnable)
-                return;
+            if (!this.isEnable) return;
             icon.setFill(Color.valueOf("#76ABAE"));
 
-            int newRow = this.y;
-            int newCol = this.x;
-
-            switch (event.getCode()) {
-                case W:
-                    newRow = this.y - 1;
-                     break;
-                case A:
-                    newCol = this.x - 1;
-                    break;
-                case S:
-                    newRow = this.y + 1;
-                    break;
-                case D:
-                    newCol = this.x + 1;
-                    break;
-                default:
-                    break;
-            }
+            int newRow = this.y + (event.getCode() == KeyCode.S ? 1 : event.getCode() == KeyCode.W ? -1 : 0);
+            int newCol = this.x + (event.getCode() == KeyCode.D ? 1 : event.getCode() == KeyCode.A ? -1 : 0);
 
             if (isValidMove(newRow, newCol, map, bitMap)) {
-                setCellAsObstacle(false, map, bitMap);
-                map.getChildren().remove(this.icon);
-                map.add(this.icon, newCol, newRow);
-                this.setX(newCol);
-                this.setY(newRow);
-                setCellAsObstacle(true, map, bitMap);
+                updatePosition(map, newRow, newCol, bitMap);
             }
         });
     }
@@ -75,78 +52,71 @@ public class Object {
     }
 
     public void startSearching(GridPane map, boolean[][] bitMap, Map<Object, Cell> objectGoalMap, Cell startCell, Cell goalCell, Cell objectCell) {
-        if (goalCell != null) {
-            for (Node node : map.getChildren())
-                if (node instanceof Cell)
-                    ((Cell) node).resetCell();
+        if (goalCell == null) return;
+        map.getChildren().stream().filter(node -> node instanceof Cell).forEach(node -> ((Cell) node).resetCell());
 
         PathfindingAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
         goalCell.setFill(Color.BLUE);
+
         try {
             algorithm.findPath();
         } catch (Exception e) {
-            this.getIcon().setFill(Color.valueOf("#f26065"));
+            this.setIconFill("#f26065");
             this.setEnable(true);
             goalCell.resetCell();
+
             if (!goalCell.isObstacle())
                 goalCell.setFill(Color.valueOf("#222831"));
-            else
+            else if (!goalCell.isObjectCell())
                 goalCell.setFill(Color.valueOf("#31363F"));
-            if (!objectGoalMap.isEmpty())
-                objectGoalMap.clear();
-            return;
+
+            objectGoalMap.clear();
         }
 
         this.followPath(algorithm.getPath(), map, bitMap, objectCell, objectGoalMap);
-        }
     }
 
     public void followPath(ArrayList<Cell> path, GridPane map, boolean[][] bitMap, Cell objectCell, Map<Object, Cell> objectGoalMap) {
         isEnable = false;
-        icon.setFill(Color.valueOf("#76ABAE"));
+        this.setIconFill("#76ABAE");
 
         if (path == null || path.isEmpty()) {
-            icon.setFill(Color.valueOf("#f26065"));
+            this.setIconFill("#f26065");
             System.out.println("Пустий або невірний шлях");
             return;
         }
 
         Timeline timeline = new Timeline();
         boolean[] checkedPath = new boolean[path.size()];
+
         for (int i = path.size() - 1; i >= 0; --i) {
             int finalI = i;
             timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(0.5 * (path.size() - i)), event -> {
+
                 setCellAsObstacle(false, map, bitMap);
-                for (int cell = 0; cell < path.size(); ++cell) {
-                    if (path.get(cell).isObstacle() && !checkedPath[cell]) {
-                        this.startSearching(map, bitMap, objectGoalMap, this.getCurrentObjectCell(map), objectGoalMap.get(this), objectCell);
+                for (int j = 0; j < path.size(); ++j) {
+                    if (path.get(j).isObstacle() && !checkedPath[j]) {
+                        startSearching(map, bitMap, objectGoalMap, getCurrentObjectCell(map), objectGoalMap.get(this), objectCell);
                         path.clear();
                     }
                 }
+
                 checkedPath[finalI] = true;
                 if (!path.isEmpty()) {
-                    this.setX(GridPane.getColumnIndex(path.get(finalI)));
-                    this.setY(GridPane.getRowIndex(path.get(finalI)));
-                    map.getChildren().remove(this.icon);
-                    map.add(this.icon, GridPane.getColumnIndex(path.get(finalI)), GridPane.getRowIndex(path.get(finalI)));
-                    setCellAsObstacle(true, map, bitMap);
+                    updatePosition(map, GridPane.getRowIndex(path.get(finalI)), GridPane.getColumnIndex(path.get(finalI)), bitMap);
 
-                    if (objectGoalMap.containsValue(path.get(finalI))) {
-                        for (Map.Entry<Object, Cell> entry : objectGoalMap.entrySet()) {
+                    if (objectGoalMap.containsValue(path.get(finalI)))
+                        for (Map.Entry<Object, Cell> entry : objectGoalMap.entrySet())
                             if (entry.getValue().equals(path.get(finalI))) {
                                 objectGoalMap.remove(entry.getKey());
                                 break;
                             }
-                        }
-                    }
                 }
 
             }));
         }
 
-        timeline.setOnFinished(e -> {
-            isEnable = true;
-        });
+        timeline.setOnFinished(e -> isEnable = true);
         timeline.play();
     }
 
@@ -166,14 +136,20 @@ public class Object {
         return null;
     }
 
+    private void updatePosition(GridPane map, int newRow, int newCol, boolean[][] bitMap) {
+        setCellAsObstacle(false, map, bitMap);
+        map.getChildren().remove(this.icon);
+        map.add(this.icon, newCol, newRow);
+        this.x = newCol;
+        this.y = newRow;
+        setCellAsObstacle(true, map, bitMap);
+    }
+
     /*===================================================
                           CЕТТЕРИ
     ====================================================*/
-    public void setX(int x) {
-        this.x = x;
-    }
-    public void setY(int y) {
-        this.y = y;
+    private void setIconFill(String color) {
+        this.getIcon().setFill(Color.valueOf(color));
     }
     public void setIconStroke(Color color) {
         this.icon.setStroke(color);

@@ -311,19 +311,17 @@ public class VisualizationController {
 
     private void setObjectClickListeners() {
         for (Object object : objects) {
-            Thread objectThread = new Thread(() -> {
-                object.getIcon().setOnMouseClicked(event -> {
-                    if (!object.isEnable())
-                        return;
-                    Platform.runLater(() -> {
-                        selectedObject.setIconStroke(Color.valueOf(INTERFACE_COLORS[5]));
-                        selectedObject = object;
-                        selectedObject.setIconStroke(Color.valueOf(INTERFACE_COLORS[4]));
+            Thread objectThread = new Thread(() -> object.getIcon().setOnMouseClicked(event -> {
+                if (!object.isEnable())
+                    return;
+                Platform.runLater(() -> {
+                    selectedObject.setIconStroke(Color.valueOf(INTERFACE_COLORS[5]));
+                    selectedObject = object;
+                    selectedObject.setIconStroke(Color.valueOf(INTERFACE_COLORS[4]));
 
-                        selectedObject.Move(scene, map, bitMap);
-                    });
+                    selectedObject.move(scene, map, bitMap);
                 });
-            });
+            }));
             objectThread.start();
         }
     }

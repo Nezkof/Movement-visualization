@@ -6,15 +6,10 @@ import javafx.scene.shape.Rectangle;
 
 public class Cell extends Rectangle {
     private Cell parentCell;
-    private int gCost;
-    private int hCost;
-    private int fCost;
-    private boolean isStart;
-    private boolean isGoal;
-    private boolean isOpen;
-    private boolean isChecked;
-    private boolean isObstacle;
-    private boolean isObjectCell;
+    private int gCost, hCost, fCost;
+    private boolean isStart, isGoal;
+    private boolean isOpen, isChecked;
+    private boolean isObstacle, isObjectCell;
 
     public Cell(double width, double height){
         super(width, height);
@@ -35,12 +30,9 @@ public class Cell extends Rectangle {
     }
 
     public void resetCell() {
-        if (this.isObjectCell && this.isObstacle)
-            this.setFill(Color.valueOf("#222831"));
-
-        if (!this.isObstacle)
-            if (this.isOpen || this.isChecked || this.isGoal)
-                this.setFill(Color.valueOf("#222831"));
+        this.setFill(this.isObjectCell && this.isObstacle ? Color.valueOf("#222831") :
+                (!this.isObstacle && (this.isOpen || this.isChecked || this.isGoal)) ? Color.valueOf("#222831") :
+                        this.getFill());
 
         this.isOpen = false;
         this.isChecked = false;
@@ -111,5 +103,8 @@ public class Cell extends Rectangle {
     }
     public Cell getParentCell(){
         return this.parentCell;
+    }
+    public boolean isObjectCell() {
+        return isObjectCell;
     }
 }
