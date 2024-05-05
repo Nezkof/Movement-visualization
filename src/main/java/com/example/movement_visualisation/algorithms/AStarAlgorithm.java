@@ -1,9 +1,10 @@
-package com.example.movement_visualisation;
+package com.example.movement_visualisation.algorithms;
 
+import com.example.movement_visualisation.Cell;
 import javafx.scene.layout.GridPane;
 import java.util.ArrayList;
 
-public class AStarAlgorithm {
+public class AStarAlgorithm extends PathfindingAlgorithm {
     private final int MAX_STEPS;
     private boolean goalReached;
     private final GridPane map;
@@ -25,6 +26,7 @@ public class AStarAlgorithm {
         this.goalReached = false;
     }
 
+    @Override
     public void findPath() throws Exception {
         if (!path.isEmpty())
             path.clear();

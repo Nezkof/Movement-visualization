@@ -9,4 +9,6 @@ module com.example.movement_visualisation {
     opens com.example.movement_visualisation.enums;
     exports com.example.movement_visualisation.controllers;
     opens com.example.movement_visualisation.controllers to javafx.fxml;
+    exports com.example.movement_visualisation.algorithms;
+    opens com.example.movement_visualisation.algorithms to javafx.fxml;
 }

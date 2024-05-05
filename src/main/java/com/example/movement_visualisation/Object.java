@@ -1,5 +1,7 @@
 package com.example.movement_visualisation;
 
+import com.example.movement_visualisation.algorithms.AStarAlgorithm;
+import com.example.movement_visualisation.algorithms.PathfindingAlgorithm;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.Node;
@@ -7,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Path;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -77,7 +80,7 @@ public class Object {
                 if (node instanceof Cell)
                     ((Cell) node).resetCell();
 
-        AStarAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
+        PathfindingAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
         goalCell.setFill(Color.BLUE);
         try {
             algorithm.findPath();
@@ -85,7 +88,10 @@ public class Object {
             this.getIcon().setFill(Color.valueOf("#f26065"));
             this.setEnable(true);
             goalCell.resetCell();
-            goalCell.setFill(Color.valueOf("#222831"));
+            if (!goalCell.isObstacle())
+                goalCell.setFill(Color.valueOf("#222831"));
+            else
+                goalCell.setFill(Color.valueOf("#31363F"));
             if (!objectGoalMap.isEmpty())
                 objectGoalMap.clear();
             return;
@@ -146,6 +152,7 @@ public class Object {
 
     private void setCellAsObstacle(boolean value, GridPane map, boolean[][] bitMap) {
         Cell cell = (Cell)map.getChildren().get(y*map.getColumnCount()+x);
+        cell.setAsObjectCell(value);
         cell.setAsObstacle(value);
         bitMap[getY()][getX()] = value;
     }

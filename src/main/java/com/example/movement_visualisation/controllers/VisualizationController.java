@@ -241,6 +241,7 @@ public class VisualizationController {
 
     private void placeObjectObstacles(Object object) {
         Cell cell = (Cell) map.getChildren().get(object.getY() * map.getColumnCount() + object.getX());
+        cell.setAsObjectCell(true);
         cell.setAsObstacle(true);
         bitMap[object.getY()][object.getX()] = true;
     }

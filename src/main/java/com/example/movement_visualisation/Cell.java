@@ -14,6 +14,7 @@ public class Cell extends Rectangle {
     private boolean isOpen;
     private boolean isChecked;
     private boolean isObstacle;
+    private boolean isObjectCell;
 
     public Cell(double width, double height){
         super(width, height);
@@ -34,9 +35,13 @@ public class Cell extends Rectangle {
     }
 
     public void resetCell() {
+        if (this.isObjectCell && this.isObstacle)
+            this.setFill(Color.valueOf("#222831"));
+
         if (!this.isObstacle)
             if (this.isOpen || this.isChecked || this.isGoal)
                 this.setFill(Color.valueOf("#222831"));
+
         this.isOpen = false;
         this.isChecked = false;
         this.fCost = 0;
@@ -50,6 +55,9 @@ public class Cell extends Rectangle {
     /*===================================================
                           СЕТТЕРИ
     ====================================================*/
+    public void setAsObjectCell(boolean value) {
+        this.isObjectCell = value;
+    }
     public void setAsObstacle(boolean value) {
         this.isObstacle = value;
     }
