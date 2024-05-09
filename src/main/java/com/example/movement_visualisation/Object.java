@@ -13,13 +13,16 @@ import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class Object {
     private int x;
     private int y;
     private final Circle icon;
     private boolean isEnable;
+    private ArrayList<Cell> path;
+    private PathfindingAlgorithm algorithm;
+    private Cell goalCell;
+
 
     public Object(int x, int y){
         this.x = x;
@@ -27,10 +30,11 @@ public class Object {
         this.icon = new Circle(0,0,15, Color.valueOf("#76ABAE"));
         this.icon.setStroke(Color.valueOf("#31494a"));
         this.isEnable = true;
+        this.path = new ArrayList<>();
     }
 
     /*===================================================
-                           РУХ ОБ'ЄКТА
+                        РУХ ОБ'ЄКТА
     ====================================================*/
 
     public void move(Scene scene, GridPane map, boolean[][] bitMap) {
@@ -51,16 +55,21 @@ public class Object {
         return (newRow >= 0 && newRow < map.getRowCount() && newCol >= 0 && newCol < map.getColumnCount()) && !bitMap[newRow][newCol];
     }
 
-    public void startSearching(GridPane map, boolean[][] bitMap, Map<Object, Cell> objectGoalMap, Cell startCell, Cell goalCell, Cell objectCell) {
+    /*===================================================
+                   РУХ ОБ'ЄКТА ПО АЛГОРИТМУ
+    ====================================================*/
+
+    public void startSearching(GridPane map, boolean[][] bitMap, Cell startCell, Cell objectCell) {
         if (goalCell == null) return;
         map.getChildren().stream().filter(node -> node instanceof Cell).forEach(node -> ((Cell) node).resetCell());
 
-        PathfindingAlgorithm algorithm = new AStarAlgorithm(startCell, goalCell, map);
+        algorithm = new AStarAlgorithm(startCell, goalCell, map);
         goalCell.setFill(Color.BLUE);
 
-        try {
-            algorithm.findPath();
-        } catch (Exception e) {
+        path.clear();
+        path = algorithm.findPath();
+
+        if (path.isEmpty()) {
             this.setIconFill("#f26065");
             this.setEnable(true);
             goalCell.resetCell();
@@ -69,48 +78,42 @@ public class Object {
                 goalCell.setFill(Color.valueOf("#222831"));
             else if (!goalCell.isObjectCell())
                 goalCell.setFill(Color.valueOf("#31363F"));
-
-            objectGoalMap.clear();
         }
 
-        this.followPath(algorithm.getPath(), map, bitMap, objectCell, objectGoalMap);
+        this.followPath(map, bitMap, objectCell);
+
     }
 
-    public void followPath(ArrayList<Cell> path, GridPane map, boolean[][] bitMap, Cell objectCell, Map<Object, Cell> objectGoalMap) {
+    private void followPath(GridPane map, boolean[][] bitMap, Cell objectCell) {
+        ArrayList<Cell> localPath = path;
         isEnable = false;
         this.setIconFill("#76ABAE");
 
-        if (path == null || path.isEmpty()) {
+        if (localPath == null || localPath.isEmpty()) {
             this.setIconFill("#f26065");
+            isEnable = true;
             System.out.println("Пустий або невірний шлях");
             return;
         }
 
         Timeline timeline = new Timeline();
-        boolean[] checkedPath = new boolean[path.size()];
+        boolean[] checkedPath = new boolean[localPath.size()];
 
-        for (int i = path.size() - 1; i >= 0; --i) {
+
+        for (int i = localPath.size() - 1; i >= 0; --i) {
             int finalI = i;
-            timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(0.5 * (path.size() - i)), event -> {
-
+            timeline.getKeyFrames().add(new KeyFrame(Duration.seconds(0.5 * (localPath.size() - i)), event -> {
                 setCellAsObstacle(false, map, bitMap);
-                for (int j = 0; j < path.size(); ++j) {
-                    if (path.get(j).isObstacle() && !checkedPath[j]) {
-                        startSearching(map, bitMap, objectGoalMap, getCurrentObjectCell(map), objectGoalMap.get(this), objectCell);
-                        path.clear();
+                for (int j = 0; j < localPath.size(); ++j) {
+                    if (localPath.get(j).isObstacle() && !checkedPath[j]) {
+                        timeline.stop();
+                        startSearching(map, bitMap, getCurrentObjectCell(map), objectCell);
                     }
                 }
 
                 checkedPath[finalI] = true;
-                if (!path.isEmpty()) {
-                    updatePosition(map, GridPane.getRowIndex(path.get(finalI)), GridPane.getColumnIndex(path.get(finalI)), bitMap);
-
-                    if (objectGoalMap.containsValue(path.get(finalI)))
-                        for (Map.Entry<Object, Cell> entry : objectGoalMap.entrySet())
-                            if (entry.getValue().equals(path.get(finalI))) {
-                                objectGoalMap.remove(entry.getKey());
-                                break;
-                            }
+                if (!localPath.isEmpty()) {
+                    updatePosition(map, GridPane.getRowIndex(localPath.get(finalI)), GridPane.getColumnIndex(localPath.get(finalI)), bitMap);
                 }
 
             }));
@@ -156,6 +159,10 @@ public class Object {
     }
     public void setEnable(boolean value) {
         this.isEnable = value;
+    }
+
+    public void setGoalCell(Cell cell) {
+        this.goalCell = cell;
     }
 
     /*===================================================

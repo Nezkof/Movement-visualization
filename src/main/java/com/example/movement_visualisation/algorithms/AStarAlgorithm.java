@@ -5,17 +5,12 @@ import javafx.scene.layout.GridPane;
 import java.util.ArrayList;
 
 public class AStarAlgorithm extends PathfindingAlgorithm {
-    private final int MAX_STEPS;
     private boolean goalReached;
-    private final GridPane map;
     private Cell currentCell;
-    private final Cell startCell;
-    private final Cell goalCell;
     private final ArrayList<Cell> openList;
-    private final ArrayList<Cell> path;
 
     public AStarAlgorithm(Cell startCell, Cell goalCell, GridPane map){
-        this.MAX_STEPS = map.getColumnCount()*map.getRowCount();
+        super(startCell, goalCell, map);
         this.currentCell = startCell;
         this.startCell = startCell;
         this.goalCell = goalCell;
@@ -27,7 +22,7 @@ public class AStarAlgorithm extends PathfindingAlgorithm {
     }
 
     @Override
-    public void findPath() throws Exception {
+    public ArrayList<Cell> findPath() {
         if (!path.isEmpty())
             path.clear();
 
@@ -66,25 +61,24 @@ public class AStarAlgorithm extends PathfindingAlgorithm {
                 }
             }
 
-            try {
+            if (!openList.isEmpty())
                 currentCell = openList.get(bestCellIndex);
-            }
-            catch (Exception ex) {
-                throw new Exception("Can't reach the goal");
-            }
 
             if (currentCell == goalCell){
                 goalReached = true;
-                trackThePath();
+                return trackPath();
             }
+
             step++;
         }
 
         if (!goalReached)
             System.out.println("Шлях не знайдено");
+
+        return new ArrayList<>();
     }
 
-    private void trackThePath(){
+    private ArrayList<Cell> trackPath(){
         Cell current = goalCell;
 
         while(current != startCell) {
@@ -96,6 +90,8 @@ public class AStarAlgorithm extends PathfindingAlgorithm {
         }
 
         this.path.add(startCell);
+
+        return path;
     }
 
     private void openCell(Cell cell) {
@@ -110,4 +106,5 @@ public class AStarAlgorithm extends PathfindingAlgorithm {
     public ArrayList<Cell> getPath() {
         return this.path;
     }
+
 }

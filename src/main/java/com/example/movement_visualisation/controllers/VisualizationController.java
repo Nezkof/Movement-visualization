@@ -49,7 +49,6 @@ public class VisualizationController {
     private boolean[][] bitMap;
     private Object[] objects;
     private Object selectedObject;
-    private Map<Object, Cell> objectGoalMap;
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
@@ -60,7 +59,6 @@ public class VisualizationController {
         this.objectsNumber = objectsNumber;
         this.isObstacles = isObstacles;
         this.map = new GridPane();
-        this.objectGoalMap = new HashMap<>();
 
         validateData();
 
@@ -272,24 +270,18 @@ public class VisualizationController {
             if (!cell.isObstacle() && !cell.isGoal()) {
                 boolean isObjectCell = false;
                 for (Object object : objects) {
-                    if (object.getX() == GridPane.getColumnIndex((Node) event.getSource())
-                            && object.getY() == GridPane.getRowIndex((Node) event.getSource())) {
+                    if (object.getX() == GridPane.getColumnIndex((Node) event.getSource()) && object.getY() == GridPane.getRowIndex((Node) event.getSource())) {
                         isObjectCell = true;
                         break;
                     }
                 }
 
                 Cell objectCell = selectedObject.getCurrentObjectCell(map);
-                if (!isObjectCell)
-                    if (!objectGoalMap.containsValue(cell)) {
-                        cell.setAsGoal(true);
-                        objectGoalMap.put(selectedObject, cell);
 
-                        selectedObject.startSearching(map, bitMap, objectGoalMap, objectCell, objectGoalMap.get(selectedObject), objectCell);
-                    }
-                    else {
-                        selectedObject.getIcon().setFill(Color.valueOf(INTERFACE_COLORS[6]));
-                    }
+                if (!isObjectCell) {
+                    selectedObject.setGoalCell(cell);
+                    selectedObject.startSearching(map, bitMap, objectCell, objectCell);
+                }
             }
         }
     }
