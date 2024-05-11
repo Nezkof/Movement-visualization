@@ -10,7 +10,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.io.InterruptedIOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -26,7 +25,6 @@ public class HelloController {
     @FXML private Pane errorWindow;
     @FXML private ChoiceBox button_isFromTemplate;
 
-
     public HelloController() {
         button_isFromTemplate = new ChoiceBox();
     }
@@ -35,21 +33,26 @@ public class HelloController {
                        ІНІЦІАЛІЗАЦІЯ
     ====================================================*/
     @FXML void initialize() {
-        button_isFromTemplate.getItems().addAll("30%", "60%", "90%");
+        button_isFromTemplate.getItems().addAll("10%", "15%", "20%", "30%", "40%", "50%");
 
         button_isObstacles.setOnMouseClicked(event -> {
             button_isFromTemplate.setDisable(button_isObstacles.isSelected());
         });
 
         startButton.setOnAction(actionEvent -> {
-            validateData();
-            try {
+            if (button_isFromTemplate.getValue() != null) {
+                textFieldWidth.setText("0");
+                textFieldHeight.setText("0");
+                textFieldObjectsNumber.setText("0");
                 loadVisualizationWindow();
-            } catch (Exception e) {
-                validateData();
-                actionEvent.consume();
             }
-
+            else {
+                try {
+                    loadVisualizationWindow();
+                } catch (Exception e) {
+                    validateData();
+                }
+            }
         });
     }
 
@@ -83,8 +86,10 @@ public class HelloController {
     }
 
     private int getTemplateDensityValue(String value) {
+        if (value == null)
+            return 0;
         return Integer.parseInt(value.replaceAll("\\D", ""));
-    };
+    }
 
     /*===================================================
                      ОБРОБКА ПОМИЛОК

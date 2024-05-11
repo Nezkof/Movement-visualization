@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.shape.*?>
@@ -9,21 +11,35 @@
 <AnchorPane fx:id="rootPane" prefHeight="840.0" prefWidth="1536.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.movement_visualisation.controllers.VisualizationController">
    <children>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#222831" height="840.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1536.0" />
-      <VBox fx:id="VBox" alignment="CENTER" prefHeight="840.0" prefWidth="1536.0" />
-      <Pane fx:id="warningWindow" layoutY="640.0" prefHeight="200.0" prefWidth="1536.0" visible="false">
-         <children>
-            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#d3e530" height="200.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="0.0" width="1536.0" />
-            <Text layoutX="14.0" layoutY="54.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Warning" wrappingWidth="188.6708984375">
-               <font>
-                  <Font name="Cambria Math" size="45.0" />
-               </font>
-            </Text>
-            <Text fx:id="warningText" layoutX="14.0" layoutY="97.0" strokeType="OUTSIDE" strokeWidth="0.0" text="warning text example" wrappingWidth="1186.6708984375">
-               <font>
-                  <Font name="Cambria Math" size="36.0" />
-               </font>
-            </Text>
-         </children>
-      </Pane>
+      <VBox fx:id="VBox" alignment="CENTER" prefHeight="689.0" prefWidth="1536.0" />
+      <ImageView fitHeight="147.0" fitWidth="400.0" layoutY="693.0" pickOnBounds="true" smooth="false">
+         <image>
+            <Image url="@../../../assets/keyControlSection.png" />
+         </image>
+         <viewport>
+            <Rectangle2D />
+         </viewport>
+      </ImageView>
+      <ImageView fitHeight="147.0" fitWidth="736.0" layoutX="400.0" layoutY="693.0" pickOnBounds="true" smooth="false">
+         <image>
+            <Image url="@../../../assets/pathFindControlSection.png" />
+         </image>
+         <viewport>
+            <Rectangle2D />
+         </viewport>
+      </ImageView>
+      <ImageView fitHeight="147.0" fitWidth="400.0" layoutX="1136.0" layoutY="693.0" pickOnBounds="true" smooth="false">
+         <image>
+            <Image url="@../../../assets/systemMsgSection.png" />
+         </image>
+         <viewport>
+            <Rectangle2D />
+         </viewport>
+      </ImageView>
+      <Text fx:id="warningText" fill="WHITE" layoutX="1142.0" layoutY="749.0" strokeType="OUTSIDE" strokeWidth="0.0" text="promt" visible="false" wrappingWidth="385.759765625">
+         <font>
+            <Font name="Cambria Math" size="22.0" />
+         </font>
+      </Text>
    </children>
 </AnchorPane>

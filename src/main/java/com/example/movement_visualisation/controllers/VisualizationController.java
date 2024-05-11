@@ -11,7 +11,6 @@ import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -19,17 +18,18 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 
 public class VisualizationController {
     @FXML private Text warningText;
-    @FXML private Pane warningWindow;
     @FXML private VBox VBox;
 
     private final int[] WIDTH_INTERVAL = {10,30};
-    private final int[] HEIGHT_INTERVAL = {10,16};
+    private final int[] HEIGHT_INTERVAL = {10,13};
     private final int[] OBJECTSNUMBER_INTERVAL = {2,5};
     private final String[] INTERFACE_COLORS = {
             "#222831", //field
@@ -49,30 +49,59 @@ public class VisualizationController {
     private boolean[][] bitMap;
     private Object[] objects;
     private Object selectedObject;
-    private int isFromTemplate;
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
     ====================================================*/
-    @FXML void initialize (int fieldHeight, int fieldWidth, int objectsNumber, boolean isObstacles, int isFromTemplate, Scene scene) {
-        this.fieldHeight = fieldHeight;
-        this.fieldWidth = fieldWidth;
-        this.objectsNumber = objectsNumber;
-        this.isObstacles = isObstacles;
-        this.isFromTemplate = isFromTemplate;
+    @FXML void initialize (int fieldHeight, int fieldWidth, int objectsNumber, boolean isObstacles, int templateId, Scene scene) {
         this.map = new GridPane();
-
-        validateData();
-
-        this.objects = new Object[this.objectsNumber];
-        this.bitMap = new boolean[this.fieldHeight][this.fieldWidth];
         this.scene = scene;
 
-        startVisualization();
+        if (templateId == 0) {
+            this.fieldHeight = fieldHeight;
+            this.fieldWidth = fieldWidth;
+            this.objectsNumber = objectsNumber;
+            this.isObstacles = isObstacles;
+
+            validateData();
+
+            this.objects = new Object[this.objectsNumber];
+            this.bitMap = new boolean[this.fieldHeight][this.fieldWidth];
+            startVisualization();
+        } else {
+            uploadTemplate(templateId);
+            setCells();
+            setObjects();
+        }
+    }
+
+    private void uploadTemplate(int templateId) {
+        this.fieldHeight = HEIGHT_INTERVAL[1];
+        this.fieldWidth = WIDTH_INTERVAL[1];
+        this.objectsNumber = OBJECTSNUMBER_INTERVAL[1];
+        this.objects = new Object[this.objectsNumber];
+        this.bitMap = new boolean[this.fieldHeight][this.fieldWidth];
+
+        try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/templates/" + templateId + ".txt"))) {
+            String line;
+            int rowIndex = 0;
+            while ((line = reader.readLine()) != null && rowIndex < this.fieldHeight) {
+                for (int columnIndex = 0; columnIndex < Math.min(line.length(), this.fieldWidth); columnIndex++) {
+                    char c = line.charAt(columnIndex);
+                    bitMap[rowIndex][columnIndex] = (c == '1');
+                    System.out.print(bitMap[rowIndex][columnIndex] ? 1 : 0);
+                }
+                System.out.println();
+                rowIndex++;
+            }
+        } catch (IOException e) {
+            System.out.println("Файл не знайдено");
+        }
     }
 
     private void startVisualization() {
-        generateMap();
+        generateBitMap();
+        setCells();
         setObjects();
     }
 
@@ -141,10 +170,10 @@ public class VisualizationController {
 
     private void showWarningWindow(String msg) {
         Timer timer = new Timer();
-        warningWindow.setVisible(true);
+        warningText.setVisible(true);
         warningText.setText(msg);
         timer.schedule(new TimerTask() {
-            @Override public void run() { warningWindow.setVisible(false); }
+            @Override public void run() { warningText.setVisible(false); }
         }, 2000);
     }
 
@@ -156,17 +185,12 @@ public class VisualizationController {
     /*===================================================
                        ГЕНЕРАЦІЯ КАРТИ
     ====================================================*/
-    private void generateMap() {
-        generateBitMap();
-        setCells();
-    }
-
     private void generateBitMap(){
         Random random = new Random();
         for (int i = 0; i < this.fieldHeight; ++i) {
             for (int j = 0; j < this.fieldWidth; ++j) {
                 if (isObstacles) {
-                    for (int k = 0; k < this.fieldWidth/3; ++k)
+                    for (int k = 0; k < this.fieldWidth*0.3; ++k)
                         bitMap[i][random.nextInt(this.fieldWidth)] = true;
                     break;
                 }
@@ -267,21 +291,13 @@ public class VisualizationController {
     }
 
     private void handleMouseClicked(MouseEvent event) {
-        if (selectedObject.isEnable()){
+        if (selectedObject.isEnable()) {
             Cell cell = (Cell) event.getSource();
             if (!cell.isObstacle() && !cell.isGoal()) {
-                boolean isObjectCell = false;
-                for (Object object : objects) {
-                    if (object.getX() == GridPane.getColumnIndex((Node) event.getSource()) && object.getY() == GridPane.getRowIndex((Node) event.getSource())) {
-                        isObjectCell = true;
-                        break;
-                    }
-                }
-
-                if (!isObjectCell) {
-                    selectedObject.setGoalCell(cell);
-                    selectedObject.startSearching(map, bitMap);
-                }
+                selectedObject.setGoalCell(cell);
+                selectedObject.startSearching(map, bitMap);
+            } else {
+                showWarningWindow("Точка призначення хибна");
             }
         }
     }
@@ -293,7 +309,7 @@ public class VisualizationController {
             bitMap[GridPane.getRowIndex(cell)][GridPane.getColumnIndex(cell)] = true;
             cell.setFill(Color.valueOf(INTERFACE_COLORS[2]));
             cell.setStroke(Color.valueOf(INTERFACE_COLORS[3]));
-        } else if (!cell.isGoal()) {
+        } else {
             cell.setAsObstacle(false);
             bitMap[GridPane.getRowIndex(cell)][GridPane.getColumnIndex(cell)] = false;
             cell.setFill(Color.valueOf(INTERFACE_COLORS[0]));
