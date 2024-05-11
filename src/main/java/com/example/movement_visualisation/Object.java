@@ -23,13 +23,15 @@ public class Object {
     private PathfindingAlgorithm algorithm;
     private Cell goalCell;
 
+    private GridPane map;
 
-    public Object(int x, int y){
+    public Object(int x, int y, GridPane map){
         this.x = x;
         this.y = y;
         this.icon = new Circle(0,0,15, Color.valueOf("#76ABAE"));
         this.icon.setStroke(Color.valueOf("#31494a"));
         this.isEnable = true;
+        this.map = map;
         this.path = new ArrayList<>();
     }
 
@@ -37,7 +39,7 @@ public class Object {
                         РУХ ОБ'ЄКТА
     ====================================================*/
 
-    public void move(Scene scene, GridPane map, boolean[][] bitMap) {
+    public void move(Scene scene, boolean[][] bitMap) {
         scene.setOnKeyPressed(event -> {
             if (!this.isEnable) return;
             icon.setFill(Color.valueOf("#76ABAE"));
@@ -45,13 +47,14 @@ public class Object {
             int newRow = this.y + (event.getCode() == KeyCode.S ? 1 : event.getCode() == KeyCode.W ? -1 : 0);
             int newCol = this.x + (event.getCode() == KeyCode.D ? 1 : event.getCode() == KeyCode.A ? -1 : 0);
 
-            if (isValidMove(newRow, newCol, map, bitMap)) {
+
+            if (isValidMove(newRow, newCol, bitMap)) {
                 updatePosition(map, newRow, newCol, bitMap);
             }
         });
     }
 
-    private boolean isValidMove(int newRow, int newCol, GridPane map, boolean[][] bitMap) {
+    private boolean isValidMove(int newRow, int newCol, boolean[][] bitMap) {
         return (newRow >= 0 && newRow < map.getRowCount() && newCol >= 0 && newCol < map.getColumnCount()) && !bitMap[newRow][newCol];
     }
 
@@ -59,11 +62,11 @@ public class Object {
                    РУХ ОБ'ЄКТА ПО АЛГОРИТМУ
     ====================================================*/
 
-    public void startSearching(GridPane map, boolean[][] bitMap, Cell startCell, Cell objectCell) {
+    public void startSearching(GridPane map, boolean[][] bitMap) {
         if (goalCell == null) return;
         map.getChildren().stream().filter(node -> node instanceof Cell).forEach(node -> ((Cell) node).resetCell());
 
-        algorithm = new AStarAlgorithm(startCell, goalCell, map);
+        algorithm = new AStarAlgorithm((Cell)map.getChildren().get(y*map.getColumnCount() + x), goalCell, map);
         goalCell.setFill(Color.BLUE);
 
         path.clear();
@@ -80,11 +83,11 @@ public class Object {
                 goalCell.setFill(Color.valueOf("#31363F"));
         }
 
-        this.followPath(map, bitMap, objectCell);
+        this.followPath(map, bitMap);
 
     }
 
-    private void followPath(GridPane map, boolean[][] bitMap, Cell objectCell) {
+    private void followPath(GridPane map, boolean[][] bitMap) {
         ArrayList<Cell> localPath = path;
         isEnable = false;
         this.setIconFill("#76ABAE");
@@ -107,7 +110,7 @@ public class Object {
                 for (int j = 0; j < localPath.size(); ++j) {
                     if (localPath.get(j).isObstacle() && !checkedPath[j]) {
                         timeline.stop();
-                        startSearching(map, bitMap, getCurrentObjectCell(map), objectCell);
+                        startSearching(map, bitMap);
                     }
                 }
 
@@ -130,14 +133,6 @@ public class Object {
         bitMap[getY()][getX()] = value;
     }
 
-    public Cell getCurrentObjectCell(GridPane map) {
-        for (Node node : map.getChildren())
-            if (GridPane.getColumnIndex(node) != null && GridPane.getRowIndex(node) != null &&
-                GridPane.getColumnIndex(node) == this.getX() && GridPane.getRowIndex(node) == this.getY())
-                    return (Cell) node;
-
-        return null;
-    }
 
     private void updatePosition(GridPane map, int newRow, int newCol, boolean[][] bitMap) {
         setCellAsObstacle(false, map, bitMap);

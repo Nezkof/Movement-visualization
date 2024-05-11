@@ -1,0 +1,25 @@
+.choice-box .menu-item .label {
+    -fx-text-fill: white;
+}
+
+.choice-box .label {
+    -fx-text-fill: white;
+}
+
+.choice-box .context-menu {
+    -fx-background-color: #2c3039;
+}
+
+.choice-box {
+    -fx-background-color: #2c3039;
+    -fx-font-family: Cambria Math;
+    -fx-font-size: 16px;
+}
+
+.choice-box .arrow, .choice-box .arrow-button{
+    -fx-opacity: 0.0;
+}
+
+.check-box .box {
+    -fx-background-color: #2c3039;
+}

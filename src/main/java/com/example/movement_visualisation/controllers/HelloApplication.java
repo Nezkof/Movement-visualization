@@ -12,6 +12,7 @@ public class HelloApplication extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader startMenu = new FXMLLoader(getClass().getResource("/com/example/movement_visualisation/StartMenu.fxml"));
         Scene scene = new Scene(startMenu.load(), 1536, 840);
+        scene.getStylesheets().add(0, "file:/E:/KNU/2Course/2%20Semester/Курсова/Program/Movement-Visualization/src/main/resources/styles/styles.css");
         stage.setTitle("Movement Simulation");
         stage.setScene(scene);
         stage.show();

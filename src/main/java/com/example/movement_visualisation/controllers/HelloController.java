@@ -5,12 +5,12 @@ import java.io.IOException;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
+import java.io.InterruptedIOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -24,15 +24,32 @@ public class HelloController {
     @FXML private CheckBox button_isObstacles;
     @FXML private Text errorText;
     @FXML private Pane errorWindow;
+    @FXML private ChoiceBox button_isFromTemplate;
+
+
+    public HelloController() {
+        button_isFromTemplate = new ChoiceBox();
+    }
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
     ====================================================*/
-
     @FXML void initialize() {
+        button_isFromTemplate.getItems().addAll("30%", "60%", "90%");
+
+        button_isObstacles.setOnMouseClicked(event -> {
+            button_isFromTemplate.setDisable(button_isObstacles.isSelected());
+        });
+
         startButton.setOnAction(actionEvent -> {
             validateData();
-            loadVisualizationWindow();
+            try {
+                loadVisualizationWindow();
+            } catch (Exception e) {
+                validateData();
+                actionEvent.consume();
+            }
+
         });
     }
 
@@ -54,14 +71,20 @@ public class HelloController {
                     parseInt(textFieldWidth.getText()),
                     parseInt(textFieldObjectsNumber.getText()),
                     button_isObstacles.isSelected(),
+                    getTemplateDensityValue((String)button_isFromTemplate.getValue()),
                     scene
             );
+
             stage.show();
             ((Stage) startButton.getScene().getWindow()).close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    private int getTemplateDensityValue(String value) {
+        return Integer.parseInt(value.replaceAll("\\D", ""));
+    };
 
     /*===================================================
                      ОБРОБКА ПОМИЛОК

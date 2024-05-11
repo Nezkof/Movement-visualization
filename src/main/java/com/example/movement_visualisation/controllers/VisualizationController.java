@@ -49,15 +49,17 @@ public class VisualizationController {
     private boolean[][] bitMap;
     private Object[] objects;
     private Object selectedObject;
+    private int isFromTemplate;
 
     /*===================================================
                        ІНІЦІАЛІЗАЦІЯ
     ====================================================*/
-    @FXML void initialize (int fieldHeight, int fieldWidth, int objectsNumber, boolean isObstacles, Scene scene) {
+    @FXML void initialize (int fieldHeight, int fieldWidth, int objectsNumber, boolean isObstacles, int isFromTemplate, Scene scene) {
         this.fieldHeight = fieldHeight;
         this.fieldWidth = fieldWidth;
         this.objectsNumber = objectsNumber;
         this.isObstacles = isObstacles;
+        this.isFromTemplate = isFromTemplate;
         this.map = new GridPane();
 
         validateData();
@@ -223,7 +225,7 @@ public class VisualizationController {
                 y = random.nextInt(this.fieldHeight);
             } while (bitMap[y][x]);
 
-            objects[i] = new Object(x, y);
+            objects[i] = new Object(x, y, map);
 
             map.add(objects[i].getIcon(), x, y);
             GridPane.setHalignment(objects[i].getIcon(), HPos.CENTER);
@@ -276,11 +278,9 @@ public class VisualizationController {
                     }
                 }
 
-                Cell objectCell = selectedObject.getCurrentObjectCell(map);
-
                 if (!isObjectCell) {
                     selectedObject.setGoalCell(cell);
-                    selectedObject.startSearching(map, bitMap, objectCell, objectCell);
+                    selectedObject.startSearching(map, bitMap);
                 }
             }
         }
@@ -311,7 +311,7 @@ public class VisualizationController {
                     selectedObject = object;
                     selectedObject.setIconStroke(Color.valueOf(INTERFACE_COLORS[4]));
 
-                    selectedObject.move(scene, map, bitMap);
+                    selectedObject.move(scene, bitMap);
                 });
             }));
             objectThread.start();
