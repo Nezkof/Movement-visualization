@@ -18,9 +18,8 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
 import java.util.*;
 
 
@@ -57,6 +56,12 @@ public class VisualizationController {
         this.map = new GridPane();
         this.scene = scene;
 
+        System.out.println(fieldHeight);
+        System.out.println(fieldWidth);
+        System.out.println(objectsNumber);
+        System.out.println(isObstacles);
+        System.out.println(templateId);
+
         if (templateId == 0) {
             this.fieldHeight = fieldHeight;
             this.fieldWidth = fieldWidth;
@@ -68,7 +73,9 @@ public class VisualizationController {
             this.objects = new Object[this.objectsNumber];
             this.bitMap = new boolean[this.fieldHeight][this.fieldWidth];
             startVisualization();
-        } else {
+        }
+
+        else {
             uploadTemplate(templateId);
             setCells();
             setObjects();
@@ -78,20 +85,24 @@ public class VisualizationController {
     private void uploadTemplate(int templateId) {
         this.fieldHeight = HEIGHT_INTERVAL[1];
         this.fieldWidth = WIDTH_INTERVAL[1];
-        this.objectsNumber = OBJECTSNUMBER_INTERVAL[1];
+        this.objectsNumber = 1;
+        //this.objectsNumber = OBJECTSNUMBER_INTERVAL[1];
         this.objects = new Object[this.objectsNumber];
         this.bitMap = new boolean[this.fieldHeight][this.fieldWidth];
 
-        try (BufferedReader reader = new BufferedReader(new FileReader("src/main/resources/templates/" + templateId + ".txt"))) {
+
+
+        try (
+                BufferedReader reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/templates/" + templateId + ".txt"))));
+        )
+        {
             String line;
             int rowIndex = 0;
             while ((line = reader.readLine()) != null && rowIndex < this.fieldHeight) {
                 for (int columnIndex = 0; columnIndex < Math.min(line.length(), this.fieldWidth); columnIndex++) {
                     char c = line.charAt(columnIndex);
                     bitMap[rowIndex][columnIndex] = (c == '1');
-                    System.out.print(bitMap[rowIndex][columnIndex] ? 1 : 0);
                 }
-                System.out.println();
                 rowIndex++;
             }
         } catch (IOException e) {
@@ -168,7 +179,7 @@ public class VisualizationController {
         return codes;
     }
 
-    private void showWarningWindow(String msg) {
+    public void showWarningWindow(String msg) {
         Timer timer = new Timer();
         warningText.setVisible(true);
         warningText.setText(msg);
@@ -249,7 +260,7 @@ public class VisualizationController {
                 y = random.nextInt(this.fieldHeight);
             } while (bitMap[y][x]);
 
-            objects[i] = new Object(x, y, map);
+            objects[i] = new Object(x, y, map, this);
 
             map.add(objects[i].getIcon(), x, y);
             GridPane.setHalignment(objects[i].getIcon(), HPos.CENTER);
@@ -332,6 +343,10 @@ public class VisualizationController {
             }));
             objectThread.start();
         }
+    }
+
+    protected GridPane getMap() {
+        return map;
     }
 
 }

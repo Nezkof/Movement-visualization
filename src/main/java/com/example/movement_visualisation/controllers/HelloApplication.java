@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class HelloApplication extends Application {
-    @Override
+        @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader startMenu = new FXMLLoader(getClass().getResource("/com/example/movement_visualisation/StartMenu.fxml"));
         Scene scene = new Scene(startMenu.load(), 1536, 840);
@@ -21,6 +21,4 @@ public class HelloApplication extends Application {
     public static void main(String[] args) {
         launch();
     }
-
-
 }

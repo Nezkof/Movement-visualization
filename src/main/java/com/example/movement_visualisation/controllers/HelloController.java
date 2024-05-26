@@ -16,14 +16,14 @@ import java.util.TimerTask;
 import static java.lang.Integer.parseInt;
 
 public class HelloController {
-    @FXML private TextField textFieldWidth;
-    @FXML private TextField textFieldHeight;
-    @FXML private TextField textFieldObjectsNumber;
-    @FXML private Button startButton;
-    @FXML private CheckBox button_isObstacles;
+    @FXML protected TextField textFieldWidth;
+    @FXML protected TextField textFieldHeight;
+    @FXML protected TextField textFieldObjectsNumber;
+    @FXML protected Button startButton;
+    @FXML protected CheckBox button_isObstacles;
     @FXML private Text errorText;
     @FXML private Pane errorWindow;
-    @FXML private ChoiceBox button_isFromTemplate;
+    @FXML protected ChoiceBox button_isFromTemplate;
 
     public HelloController() {
         button_isFromTemplate = new ChoiceBox();
@@ -37,6 +37,7 @@ public class HelloController {
 
         button_isObstacles.setOnMouseClicked(event -> {
             button_isFromTemplate.setDisable(button_isObstacles.isSelected());
+            button_isFromTemplate.setValue(null);
         });
 
         startButton.setOnAction(actionEvent -> {
@@ -45,14 +46,14 @@ public class HelloController {
                 textFieldHeight.setText("0");
                 textFieldObjectsNumber.setText("0");
                 loadVisualizationWindow();
-            }
-            else {
+            } else {
                 try {
                     loadVisualizationWindow();
                 } catch (Exception e) {
                     validateData();
                 }
             }
+
         });
     }
 

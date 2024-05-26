@@ -2,6 +2,7 @@ package com.example.movement_visualisation;
 
 import com.example.movement_visualisation.algorithms.AStarAlgorithm;
 import com.example.movement_visualisation.algorithms.PathfindingAlgorithm;
+import com.example.movement_visualisation.controllers.VisualizationController;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.Node;
@@ -23,9 +24,12 @@ public class Object {
     private PathfindingAlgorithm algorithm;
     private Cell goalCell;
 
+    private VisualizationController controller;
+
     private GridPane map;
 
-    public Object(int x, int y, GridPane map){
+    public Object(int x, int y, GridPane map, VisualizationController controller){
+        this.controller = controller;
         this.x = x;
         this.y = y;
         this.icon = new Circle(0,0,15, Color.valueOf("#76ABAE"));
@@ -63,6 +67,7 @@ public class Object {
     ====================================================*/
 
     public void startSearching(GridPane map, boolean[][] bitMap) {
+        long startTime = System.currentTimeMillis();
         if (goalCell == null) return;
         map.getChildren().stream().filter(node -> node instanceof Cell).forEach(node -> ((Cell) node).resetCell());
 
@@ -81,6 +86,10 @@ public class Object {
                 goalCell.setFill(Color.valueOf("#222831"));
             else if (!goalCell.isObjectCell())
                 goalCell.setFill(Color.valueOf("#31363F"));
+
+            controller.showWarningWindow("Шлях прокласти неможливо");
+        } else {
+            controller.showWarningWindow("Шлях прокладено за " + (System.currentTimeMillis() - startTime) + "мс");
         }
 
         this.followPath(map, bitMap);
