@@ -119,6 +119,7 @@ public class Object {
                 for (int j = 0; j < localPath.size(); ++j) {
                     if (localPath.get(j).isObstacle() && !checkedPath[j]) {
                         timeline.stop();
+                        setCellAsObstacle(true, map, bitMap);
                         startSearching(map, bitMap);
                     }
                 }

@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -66,6 +67,7 @@ public class HelloController {
         try {
             Scene scene = new Scene(visualizationWindow.load(), 1536, 840);
             Stage stage = new Stage();
+            stage.getIcons().add(new Image("file:/E:/KNU/2Course/2%20Semester/Курсова/Program/Movement-Visualization/src/main/resources/assets/icon.png"));
             stage.setTitle("Movement Simulation");
             stage.setScene(scene);
 
